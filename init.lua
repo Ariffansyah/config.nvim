@@ -93,6 +93,19 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
+-- disable netrw at the very start of your init.lua
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- [[ General Settings ]]
+-- NOTE: You can change these settings as you wish!
+-- GoLang specific settings
+vim.g.go_fmt_command = 'gofmt'
+vim.g.go_auto_type_info = 1
+
+-- Autoformat on save
+vim.cmd [[autocmd BufWritePre *.go,*.ts,*.tsx lua vim.lsp.buf.format({async = true})]]
+
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -256,6 +269,88 @@ require('lazy').setup({
     },
   },
 
+  -- NOTE: GitHub Copilot Plugin so I can gitgud.
+  --
+  -- adds some good ol' code generation and code completion
+
+  'github/copilot.vim',
+
+  -- NOTE: Null-ls is a plugin that allows you to use LSP features without an LSP server.
+  -- It's a great way to get started with LSP features without needing to install a server.
+  {
+    'jose-elias-alvarez/null-ls.nvim',
+    config = function()
+      require("null-ls").setup({
+        sources = {
+          require("null-ls").builtins.formatting.prettier,
+          require("null-ls").builtins.formatting.gofmt,
+          require("null-ls").builtins.diagnostics.eslint,
+        },
+      })
+    end
+  },
+
+  -- Ensure dependencies are also included
+  { 'nvim-lua/plenary.nvim' },  -- Dependency for null-ls
+
+  -- NOTE: nvim-tree to navigate through project structure.
+  -- See `:help nvim-tree` for more information
+  --
+  -- It give sense of having an actuall full fledged IDE
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {
+        update_focused_file = {
+          enable = true,
+        },
+        view = {
+          width = 40,
+          side = 'left',
+        },
+        renderer = {
+          highlight_opened_files = 'all',
+          highlight_git = true,
+          root_folder_modifier = ':t',
+          indent_markers = {
+            enable = true,
+          },
+          full_name = true,
+        },
+      }
+    end,
+  },
+
+  -- NOTE: Comment plugin to comment out code
+  { 'numToStr/Comment.nvim', opts = {} },
+
+  --NOTE: You can never get lazier, even if it's NeoVim!
+  --  LazyGit is a plugin that allows you to use Git commands in a more visual way.
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+  },
+
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -273,7 +368,7 @@ require('lazy').setup({
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy', -- Sets the loading event to 'VimEnter'
     opts = {
       icons = {
         -- set icon mappings to true if you have a Nerd Font
@@ -606,8 +701,11 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
+        -- NOTE: GoLang LSP
+        gopls = {},
+
+        -- NOTE: Python LSP
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -615,7 +713,10 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
+        -- NOTE: And of course, you had to use these three set of LSPs.
+        tsserver = {},
+        tailwindcss = {},
+        html = {},
         --
 
         lua_ls = {
@@ -888,7 +989,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'typescript', 'tsx', 'go', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
