@@ -46,6 +46,8 @@ External Requirements:
   - If you want to write Typescript, you need `npm`
   - If you want to write Golang, you will need `go`
   - etc.
+- [Silicon](https://github.com/Aloxaf/silicon) to generate a beautiful image of your code
+  - `cargo install silicon`
 
 > **NOTE**
 > See [Install Recipes](#Install-Recipes) for additional Windows and Linux specific notes
