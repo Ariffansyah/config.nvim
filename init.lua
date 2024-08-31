@@ -217,6 +217,21 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- [[ Custom Functions ]]
+-- A custom function to randomize the color of the silicon image.
+-- Plugin is installed later in the config.
+vim.api.nvim_get_silicon_color = function()
+  local hex = '0123456789ABCDEF'
+  local color = '#'
+
+  for i = 1, 6 do
+    local index = math.random(1, #hex)
+    color = color .. hex:sub(index, index)
+  end
+
+  return color
+end
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -274,6 +289,38 @@ require('lazy').setup({
   -- adds some good ol' code generation and code completion
 
   'github/copilot.vim',
+
+  -- NOTE: A plugin to generate beautiful images of your code.
+  --
+  -- REMEMBER: The true Text Editor is Vim/Neovim!
+  {
+    'michaelrommel/nvim-silicon',
+    lazy = true,
+    cmd = 'Silicon',
+    -- Setting a custom keymap for Silicon.
+    -- See `:help vim.keymap.set()` for more information.
+    init = function()
+      vim.keymap.set('v', '<leader>si', '<cmd>Silicon<CR>', { desc = 'Generate [Si]licon image' })
+    end,
+
+    -- Setting up Silicon with some custom configuration.
+    -- Randomized color from the custom function defined above.
+    config = function()
+      require('silicon').setup {
+        no_line_number = true,
+
+        -- Font used in iTerm2, also Power10k theme font.
+        font = 'MesloLGS NF',
+        theme = 'Dracula',
+        pad_horiz = 100,
+        pad_vert = 120,
+        background = vim.api.nvim_get_silicon_color(),
+        window_title = function()
+          return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), ':t')
+        end,
+      }
+    end,
+  },
 
   -- NOTE: A plugin for Discord Rich Presence in Neovim
   -- See `:help presence.nvim` for more information.
