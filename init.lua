@@ -275,6 +275,12 @@ require('lazy').setup({
 
   'github/copilot.vim',
 
+  -- NOTE: A plugin for Discord Rich Presence in Neovim
+  -- See `:help presence.nvim` for more information.
+  --
+  -- REMEMBER: The true Text Editor is Vim/Neovim!
+  'andweeb/presence.nvim',
+
   -- NOTE: Null-ls is a plugin that allows you to use LSP features without an LSP server.
   -- It's a great way to get started with LSP features without needing to install a server.
   {
@@ -305,6 +311,13 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
     config = function()
+      -- NOTE: Adding custom keymaps for nvim-tree
+      -- See `:help nvim-tree.lua` for more information
+      --
+      -- The following keymaps are used to toggle the tree, find the current file, and refresh the tree.
+      --
+      vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle [E]xplorer' })
+
       require('nvim-tree').setup {
         update_focused_file = {
           enable = true,
