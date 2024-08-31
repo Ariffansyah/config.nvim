@@ -1,5 +1,9 @@
 # config.nvim
 
+<p align="center">
+  <img src="lua.png" alt="Lua" width="600">
+</p>
+
 > An opinionated but robust Neovim configuration used across most of my project.
 
 [![Skillicons](https://skillicons.dev/icons?i=typescript,tailwind,python,go)](https://skillicons.dev)
@@ -13,6 +17,12 @@ A customizable personal Neovim config that is:
 - Completely Documented
 
 **NOT** a Neovim distribution, but instead a starting point for your configuration.
+
+<p align="center">
+  <img src="screenshot.png" alt="Screenshot">
+</p>
+
+> Project in display is [go-relaychat](https://github.com/BillyAddlers/go-relaychat).
 
 ## Installation
 
