@@ -280,18 +280,18 @@ require('lazy').setup({
   {
     'jose-elias-alvarez/null-ls.nvim',
     config = function()
-      require("null-ls").setup({
+      require('null-ls').setup {
         sources = {
-          require("null-ls").builtins.formatting.prettier,
-          require("null-ls").builtins.formatting.gofmt,
-          require("null-ls").builtins.diagnostics.eslint,
+          require('null-ls').builtins.formatting.prettier,
+          require('null-ls').builtins.formatting.gofmt,
+          require('null-ls').builtins.diagnostics.eslint,
         },
-      })
-    end
+      }
+    end,
   },
 
   -- Ensure dependencies are also included
-  { 'nvim-lua/plenary.nvim' },  -- Dependency for null-ls
+  { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
 
   -- NOTE: nvim-tree to navigate through project structure.
   -- See `:help nvim-tree` for more information
@@ -349,6 +349,18 @@ require('lazy').setup({
     keys = {
       { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
     },
+  },
+
+  -- NOTE: Markdown Preview Plugin
+  -- This plugin allows you to preview markdown files in your browser.
+  {
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    build = 'cd app && npm install',
+    init = function()
+      vim.g.mkdp_filetypes = { 'markdown' }
+    end,
+    ft = { 'markdown' },
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
