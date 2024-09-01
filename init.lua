@@ -217,6 +217,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- [[ Basic Keybind Navigation ]]
+-- A custom keybind to ease navigation in the editor.
+
 -- [[ Custom Functions ]]
 -- A custom function to randomize the color of the silicon image.
 -- Plugin is installed later in the config.
@@ -414,6 +417,9 @@ require('lazy').setup({
     version = '*', -- Use the latest version on startup
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     init = function()
+      -- NOTE: Adding custom keymaps for bufferline
+      -- See `:help bufferline` for more information
+      --
       local keymap = require 'which-key'
       keymap.add {
         { mode = 'n' },
@@ -430,6 +436,18 @@ require('lazy').setup({
         { '<leader>[', '<cmd>BufferLineCyclePrev<CR>', desc = 'Go to previous buffer' },
         { '<leader>]', '<cmd>BufferLineCycleNext<CR>', desc = 'Go to next buffer' },
         { '<leader>q', '<cmd>BufferLinePickClose<CR>', desc = 'Close buffer' },
+      }
+
+      -- NOTE: Adding custom keymaps for bufferline
+      -- This one is focused on navigating between splits, closing splits, and moving between splits.
+      keymap.add {
+        { mode = 'n' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>ws, <cmd>split <CR>', desc = '[W]orkspace [S]plit' },
+        { '<leader>wh, <cmd>vsplit <CR>', desc = '[W]orkspace [H]orizontal split' },
+        { '<leader>wq, <cmd>q <CR>', desc = '[W]orkspace [Q]uit' },
+        { '<leader>ww, <cmd>BufferLineCycleNext', desc = '[W]orkspace [W]indow, also refer to SPACE-] for navigation' },
+        { '<leader>wj, <cmd>BufferLineCyclePrev', desc = '[W]orkspace [J]ump, also refer to SPACE-[ for navigation' },
       }
     end,
     config = function()
