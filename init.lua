@@ -298,25 +298,68 @@ require('lazy').setup({
     lazy = true,
     cmd = 'Silicon',
     -- Setting a custom keymap for Silicon.
-    -- See `:help vim.keymap.set()` for more information.
+    -- See
     init = function()
-      vim.keymap.set('v', '<leader>si', '<cmd>Silicon<CR>', { desc = 'Generate [Si]licon image' })
+      local keymap = require 'which-key'
+      local silicon = require 'nvim-silicon'
+      keymap.add {
+        mode = { 'v' },
+        { '<leader>s', group = 'Silicon' },
+        {
+          '<leader>sc',
+          function()
+            silicon.clip()
+          end,
+          desc = 'Copy [S]ilicon render to [c]lipboard',
+        },
+        {
+          '<leader>sf',
+          function()
+            silicon.file()
+          end,
+          desc = 'Save [S]ilicon render to [f]ile',
+        },
+        {
+          '<leader>ss',
+          function()
+            silicon.shoot()
+          end,
+          desc = 'Take a [S]ilicon [s]creenshot',
+        },
+      }
     end,
 
     -- Setting up Silicon with some custom configuration.
     -- Randomized color from the custom function defined above.
     config = function()
-      require('silicon').setup {
+      require('nvim-silicon').setup {
         no_line_number = true,
 
         -- Font used in iTerm2, also Power10k theme font.
         font = 'MesloLGS NF',
         theme = 'Dracula',
+
+        -- Setup padding for the image.
         pad_horiz = 100,
         pad_vert = 120,
+
+        -- Randomized color for the background.
         background = vim.api.nvim_get_silicon_color(),
+
+        -- NOTE: We will use this to set watermark text in the image.
+        -- At least until nvim-silicon decided to support watermarking.
+        --
+        -- Another alternative is to use background_image as a watermark.
+        -- Just point directly at an image, or use a function to generate a path.
+        --
+        -- background_image = '/path/to/background.png',
+        -- background_image = function()
+        --  return vim.fn.stdpath('config') .. 'background.png'
+        -- end,
+        --
+        -- See `:help silicon` for more information.
         window_title = function()
-          return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), ':t')
+          return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), ':t') .. ' by  @billyaddlers'
         end,
       }
     end,
@@ -345,6 +388,77 @@ require('lazy').setup({
 
   -- Ensure dependencies are also included
   { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
+
+  { -- Statusline bottom-side
+    -- NOTE: Will use heirline.nvim someday, for now I'll stick with lualine.
+    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'horizon',
+        },
+        extensions = {
+          'nvim-tree',
+        },
+      }
+    end,
+  },
+
+  { -- Statusline upper-side
+    -- NOTE: Will use heirline.nvim someday, for now I'll stick with bufferline.
+    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
+    'akinsho/bufferline.nvim',
+    version = '*', -- Use the latest version on startup
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    init = function()
+      local keymap = require 'which-key'
+      keymap.add {
+        { mode = 'n' },
+        { '<leader>1', '<cmd>BufferLineGoToBuffer 1<CR>', desc = 'Go to buffer 1' },
+        { '<leader>2', '<cmd>BufferLineGoToBuffer 2<CR>', desc = 'Go to buffer 2' },
+        { '<leader>3', '<cmd>BufferLineGoToBuffer 3<CR>', desc = 'Go to buffer 3' },
+        { '<leader>4', '<cmd>BufferLineGoToBuffer 4<CR>', desc = 'Go to buffer 4' },
+        { '<leader>5', '<cmd>BufferLineGoToBuffer 5<CR>', desc = 'Go to buffer 5' },
+        { '<leader>6', '<cmd>BufferLineGoToBuffer 6<CR>', desc = 'Go to buffer 6' },
+        { '<leader>7', '<cmd>BufferLineGoToBuffer 7<CR>', desc = 'Go to buffer 7' },
+        { '<leader>8', '<cmd>BufferLineGoToBuffer 8<CR>', desc = 'Go to buffer 8' },
+        { '<leader>9', '<cmd>BufferLineGoToBuffer 9<CR>', desc = 'Go to buffer 9' },
+        { '<leader>0', '<cmd>BufferLineGoToBuffer 10<CR>', desc = 'Go to buffer 10' },
+        { '<leader>[', '<cmd>BufferLineCyclePrev<CR>', desc = 'Go to previous buffer' },
+        { '<leader>]', '<cmd>BufferLineCycleNext<CR>', desc = 'Go to next buffer' },
+        { '<leader>q', '<cmd>BufferLinePickClose<CR>', desc = 'Close buffer' },
+      }
+    end,
+    config = function()
+      require('bufferline').setup {
+        options = {
+          numbers = 'ordinal',
+          diagnostics = 'nvim_lsp',
+          diagnostics_indicator = function(count, level)
+            return '(' .. count .. ')'
+          end,
+          show_buffer_close_icons = false,
+          show_close_icon = false,
+          show_tab_indicators = true,
+          separator_style = 'thin',
+          always_show_bufferline = true,
+        },
+      }
+    end,
+  },
+
+  -- WARN: Delete both bufferline and lualine if you were to use heirline.
+  -- REMEMBER: With great strength comes great responsibility
+  -- {
+  --  'rebelot/heirline.nvim',
+  --  require('heirline').setup {
+  --    -- Configuration goes here
+  --    -- Visit https://github.com/rebelot/heirline.nvim for more information
+  --  }
+  -- },
 
   -- NOTE: nvim-tree to navigate through project structure.
   -- See `:help nvim-tree` for more information
