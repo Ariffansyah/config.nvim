@@ -134,6 +134,9 @@ end)
 -- Enable break indent
 vim.opt.breakindent = true
 
+-- Enable relative number
+vim.opt.relativenumber = true
+
 -- Save undo history
 vim.opt.undofile = true
 
@@ -290,8 +293,28 @@ require('lazy').setup({
   -- NOTE: GitHub Copilot Plugin so I can gitgud.
   --
   -- adds some good ol' code generation and code completion
-
   'github/copilot.vim',
+  {
+    'CopilotC-Nvim/CopilotChat.nvim', -- Copilot Chat
+    branch = 'canary',
+    init = function()
+      local copilot = require 'CopilotChat'
+      local keymap = require 'which-key'
+      keymap.add {
+        mode = { 'n', 'v' },
+        { '<leader>cc', 'CopilotChatToggle', desc = 'Copilot Chat' },
+      }
+    end,
+    dependencies = {
+      'github/copilot.vim',
+      'nvim-lua/plenary.nvim', -- for curl, log wrapper
+    },
+    build = 'make tiktoken', -- Only on MacOS or Linux
+    opts = {
+      debug = false, -- Enable debugging
+      -- See Configuration section for rest
+    },
+  },
 
   -- NOTE: A plugin to generate beautiful images of your code.
   --
@@ -368,6 +391,28 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: A plugin to navigate between tmux panes and vim splits.
+  -- See `:help vim-tmux-navigator` for more information.
+  -- This plugin allows you to use the same keybinds to navigate between tmux panes and vim splits.
+  -- This is especially useful if you use tmux and vim together.
+  {
+    'christoomey/vim-tmux-navigator',
+    cmd = {
+      'TmuxNavigateLeft',
+      'TmuxNavigateDown',
+      'TmuxNavigateUp',
+      'TmuxNavigateRight',
+      'TmuxNavigatePrevious',
+    },
+    keys = {
+      { '<c-h>', '<cmd><C-U>TmuxNavigateLeft<cr>' },
+      { '<c-j>', '<cmd><C-U>TmuxNavigateDown<cr>' },
+      { '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
+      { '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
+      { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+    },
+  },
+
   -- NOTE: A plugin for Discord Rich Presence in Neovim
   -- See `:help presence.nvim` for more information.
   --
@@ -376,18 +421,18 @@ require('lazy').setup({
 
   -- NOTE: Null-ls is a plugin that allows you to use LSP features without an LSP server.
   -- It's a great way to get started with LSP features without needing to install a server.
-  {
-    'jose-elias-alvarez/null-ls.nvim',
-    config = function()
-      require('null-ls').setup {
-        sources = {
-          require('null-ls').builtins.formatting.prettier,
-          require('null-ls').builtins.formatting.gofmt,
-          require('null-ls').builtins.diagnostics.eslint,
-        },
-      }
-    end,
-  },
+  -- {
+  --   'jose-elias-alvarez/null-ls.nvim',
+  --   config = function()
+  --     require('null-ls').setup {
+  --       sources = {
+  --         require('null-ls').builtins.formatting.prettier,
+  --         require('null-ls').builtins.formatting.gofmt,
+  --         require('null-ls').builtins.diagnostics.eslint,
+  --       },
+  --     }
+  --   end,
+  -- },
 
   -- Ensure dependencies are also included
   { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
@@ -401,68 +446,11 @@ require('lazy').setup({
       require('lualine').setup {
         options = {
           icons_enabled = true,
-          theme = 'horizon',
+          theme = 'catppuccin', -- was 'horizon' before
         },
         extensions = {
           'nvim-tree',
-        },
-      }
-    end,
-  },
-
-  { -- Statusline upper-side
-    -- NOTE: Will use heirline.nvim someday, for now I'll stick with bufferline.
-    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
-    'akinsho/bufferline.nvim',
-    version = '*', -- Use the latest version on startup
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    init = function()
-      -- NOTE: Adding custom keymaps for bufferline
-      -- See `:help bufferline` for more information
-      --
-      local keymap = require 'which-key'
-      keymap.add {
-        { mode = 'n' },
-        { '<leader>1', '<cmd>BufferLineGoToBuffer 1<CR>', desc = 'Go to buffer 1' },
-        { '<leader>2', '<cmd>BufferLineGoToBuffer 2<CR>', desc = 'Go to buffer 2' },
-        { '<leader>3', '<cmd>BufferLineGoToBuffer 3<CR>', desc = 'Go to buffer 3' },
-        { '<leader>4', '<cmd>BufferLineGoToBuffer 4<CR>', desc = 'Go to buffer 4' },
-        { '<leader>5', '<cmd>BufferLineGoToBuffer 5<CR>', desc = 'Go to buffer 5' },
-        { '<leader>6', '<cmd>BufferLineGoToBuffer 6<CR>', desc = 'Go to buffer 6' },
-        { '<leader>7', '<cmd>BufferLineGoToBuffer 7<CR>', desc = 'Go to buffer 7' },
-        { '<leader>8', '<cmd>BufferLineGoToBuffer 8<CR>', desc = 'Go to buffer 8' },
-        { '<leader>9', '<cmd>BufferLineGoToBuffer 9<CR>', desc = 'Go to buffer 9' },
-        { '<leader>0', '<cmd>BufferLineGoToBuffer 10<CR>', desc = 'Go to buffer 10' },
-        { '<leader>[', '<cmd>BufferLineCyclePrev<CR>', desc = 'Go to previous buffer' },
-        { '<leader>]', '<cmd>BufferLineCycleNext<CR>', desc = 'Go to next buffer' },
-        { '<leader>q', '<cmd>BufferLinePickClose<CR>', desc = 'Close buffer' },
-      }
-
-      -- NOTE: Adding custom keymaps for bufferline
-      -- This one is focused on navigating between splits, closing splits, and moving between splits.
-      keymap.add {
-        { mode = 'n' },
-        { '<leader>w', group = '[W]orkspace' },
-        { '<leader>ws, <cmd>split <CR>', desc = '[W]orkspace [S]plit' },
-        { '<leader>wh, <cmd>vsplit <CR>', desc = '[W]orkspace [H]orizontal split' },
-        { '<leader>wq, <cmd>q <CR>', desc = '[W]orkspace [Q]uit' },
-        { '<leader>ww, <cmd>BufferLineCycleNext', desc = '[W]orkspace [W]indow, also refer to SPACE-] for navigation' },
-        { '<leader>wj, <cmd>BufferLineCyclePrev', desc = '[W]orkspace [J]ump, also refer to SPACE-[ for navigation' },
-      }
-    end,
-    config = function()
-      require('bufferline').setup {
-        options = {
-          numbers = 'ordinal',
-          diagnostics = 'nvim_lsp',
-          diagnostics_indicator = function(count, level)
-            return '(' .. count .. ')'
-          end,
-          show_buffer_close_icons = false,
-          show_close_icon = false,
-          show_tab_indicators = true,
-          separator_style = 'thin',
-          always_show_bufferline = true,
+          'neo-tree',
         },
       }
     end,
@@ -477,6 +465,85 @@ require('lazy').setup({
   --    -- Visit https://github.com/rebelot/heirline.nvim for more information
   --  }
   -- },
+
+  { 'echasnovski/mini.bufremove', lazy = true },
+
+  -- NOTE: Harpoon
+  -- it just works.
+  --
+  -- Harpoon is a plugin that allows you to save and navigate to different files in your project.
+  -- It's a great way to quickly jump between files that you're working on.
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {
+      menu = {
+        width = vim.api.nvim_win_get_width(0) - 4,
+      },
+      settings = {
+        save_on_toggle = true,
+      },
+    },
+    keys = function()
+      local keys = {
+        {
+          '<leader>a',
+          function()
+            require('harpoon'):list():add()
+          end,
+          desc = 'H[a]rpoon File',
+        },
+        -- NOTE: You most likely won't use this one
+        -- But I'll keep it just in case.
+        {
+          '<leader>bp',
+          function()
+            local function get_rel_path()
+              local Path = require 'plenary.path'
+              local path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+              return Path:new(path):make_relative(vim.loop.cwd())
+            end
+            local list = require('harpoon'):list()
+            if list:get_by_value(get_rel_path()) then
+              list:remove()
+            else
+              list:add()
+            end
+          end,
+          desc = 'Convert [B]uffer to Har[p]oon',
+        },
+        {
+          '<leader>h',
+          function()
+            local harpoon = require 'harpoon'
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+          end,
+          desc = '[H]arpoon Quick Menu',
+        },
+      }
+
+      for i = 1, 9 do
+        table.insert(keys, {
+          '<leader>' .. i,
+          function()
+            require('harpoon'):list():select(i)
+          end,
+          desc = 'Harpoon to File ' .. i,
+        })
+        table.insert(keys, {
+          '<M-' .. i .. '>',
+          function()
+            require('harpoon'):list():select(i)
+          end,
+          desc = 'Harpoon to File ' .. i,
+        })
+      end
+      return keys
+    end,
+  },
+
+  'nvim-tree/nvim-web-devicons', -- Dependency for nvim-tree
 
   -- NOTE: nvim-tree to navigate through project structure.
   -- See `:help nvim-tree` for more information
@@ -495,8 +562,12 @@ require('lazy').setup({
       --
       -- The following keymaps are used to toggle the tree, find the current file, and refresh the tree.
       --
-      vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle [E]xplorer' })
-
+      -- vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle [E]xplorer' })
+      --
+      -- WARN: We're migrating nvim-tree to neo-tree for buffer support!
+      -- Please remove anything related to nvim-tree to prevent breaking changes.
+      --
+      -- It's just here to provide backup and fallback in case neo-tree is not working.
       require('nvim-tree').setup {
         update_focused_file = {
           enable = true,
@@ -518,8 +589,133 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: Neo-Tree is a plugin that allows you to navigate through your project structure.
+  -- It's a great way to quickly jump between files that you're working on.
+  -- We'll be using this from now on instead of Nvim-Tree, because Neo-tree supports buffer source.
+  --
+  -- See `:help neo-tree` for more information
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+      'jackielii/neo-tree-harpoon.nvim',
+    },
+    cmd = 'Neotree',
+    opts = {
+      sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols', 'harpoon-buffers' },
+      filesystem = {
+        filtered_items = {
+          visible = false, -- when true, they will just be displayed differently than normal items
+          hide_dotfiles = true,
+          hide_gitignored = true,
+          hide_hidden = true, -- only works on Windows for hidden files/directories
+          hide_by_name = {
+            --"node_modules"
+          },
+          hide_by_pattern = { -- uses glob style patterns
+            --"*.meta",
+            --"*/src/*/tsconfig.json",
+          },
+          always_show = { -- remains visible even if other settings would normally hide it
+            --".gitignored",
+          },
+          always_show_by_pattern = { -- uses glob style patterns
+            --".env*",
+          },
+          never_show = { -- remains hidden even if visible is toggled to true, this overrides always_show
+            --".DS_Store",
+            --"thumbs.db"
+          },
+          never_show_by_pattern = { -- uses glob style patterns
+            --".null-ls_*",
+          },
+        },
+      },
+    },
+  },
+
+  -- NOTE: A tiling manager plugin for Neovim.
+  -- It works by attaching a fixed window to the current workspace.
+  --
+  -- This allows you to custom configure your workspace to your liking.
+  -- For now, it is used to display filesystem via Neo-Tree and current working Harpoon Buffers.
+  {
+    'folke/edgy.nvim',
+    event = 'VimEnter',
+    keys = {
+      {
+        '<leader>e',
+        function()
+          require('edgy').toggle()
+        end,
+        desc = 'Edgy Toggle',
+      },
+      {
+        '<leader>E',
+        function()
+          require('edgy').select()
+        end,
+        desc = 'Edgy Select Window',
+      },
+    },
+    opts = {
+      -- Disable eye-hurting animations, because why not.
+      animate = {
+        enabled = false,
+      },
+      exit_when_last = true,
+      left = {
+        -- NOTE: This is the default configuration for left-side workspace.
+        -- It will display Neo-Tree and Harpoon Buffers.
+        --
+        -- Visit https://github.com/nvim-neo-tree/neo-tree.nvim?tab=readme-ov-file#external-sources for more info.
+        {
+          title = 'Neo-Tree',
+          ft = 'neo-tree',
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == 'filesystem'
+          end,
+          pinned = true,
+          open = 'Neotree filesystem',
+          size = { height = 0.8, width = 0.15 },
+          wo = {
+            winbar = true,
+            winfixwidth = true,
+          },
+        },
+        -- Harpoon Buffers using custom source.
+        -- Visit https://github.com/jackielii/neo-tree-harpoon.nvim for more info.
+        {
+          title = 'Harpoon Buffers',
+          ft = 'neo-tree',
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == 'harpoon-buffers'
+          end,
+          pinned = true,
+          open = 'Neotree position=top harpoon-buffers',
+          size = { height = 0.2, width = 0.15 },
+          wo = {
+            winbar = true,
+            winfixwidth = true,
+          },
+        },
+        'neo-tree',
+      },
+    },
+  },
+
   -- NOTE: Comment plugin to comment out code
-  { 'numToStr/Comment.nvim', opts = {} },
+  {
+    'numToStr/Comment.nvim',
+    config = function()
+      -- Lmao I forgot to initialize config.
+      require('Comment').setup()
+    end,
+    opts = {},
+  },
 
   --NOTE: You can never get lazier, even if it's NeoVim!
   --  LazyGit is a plugin that allows you to use Git commands in a more visual way.
@@ -541,6 +737,16 @@ require('lazy').setup({
     keys = {
       { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
     },
+  },
+
+  -- NOTE: A plugin to help with autopairing brackets, quotes, etc.
+  -- Simple but strong!
+  {
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    config = true,
+    -- use opts = {} for passing setup options
+    -- this is equivalent to setup({}) function
   },
 
   -- NOTE: Markdown Preview Plugin
@@ -624,6 +830,23 @@ require('lazy').setup({
     },
   },
 
+  -- NOTE: A plugin to show you the keymaps that are available in Neovim.
+  --
+  -- Greet you with something greater than yourself.
+  -- All hail Neovim!
+  {
+    'goolord/alpha-nvim',
+    -- dependencies = { 'echasnovski/mini.icons' },
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local startify = require 'alpha.themes.startify'
+      -- available: devicons, mini, default is mini
+      -- if provider not loaded and enabled is true, it will try to use another provider
+      startify.file_icons.provider = 'devicons'
+      require('alpha').setup(startify.config)
+    end,
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -697,6 +920,7 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'harpoon')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -1134,16 +1358,38 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    -- 'folke/tokyonight.nvim',
+    'catppuccin/nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'catppuccin'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
+    end,
+    config = function()
+      -- You can configure the colorscheme here.
+      -- For example, you can set the background to be darker or lighter.
+      require('catppuccin').setup {
+        transparent_background = true,
+        default_integrations = true,
+        integrations = {
+          cmp = true,
+          gitsigns = true,
+          nvimtree = true,
+          neotree = true,
+          treesitter = true,
+          notify = false,
+          mini = {
+            enabled = true,
+            indentscope_color = '',
+          },
+        },
+      }
     end,
   },
 
@@ -1168,12 +1414,17 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
+      -- Commenting plugin that respects the current filetype
+      -- and uses treesitter to determine the correct commentstring
+      require('mini.comment').setup {
+        options = {
+          custom_commentstring = function()
+            return require('ts_context_commentstring.internal').calculate_commentstring() or vim.bo.commentstring
+          end,
+        },
+      }
+
       local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
