@@ -434,6 +434,13 @@ require('lazy').setup({
   --   end,
   -- },
 
+  -- NOTE: Loading the icon plugins early to prevent any issues with icons.
+  -- Most plugins below this will uses icons a lot.
+  {
+    'DaikyXendo/nvim-material-icon',
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+  },
   -- Ensure dependencies are also included
   { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
 
@@ -543,8 +550,6 @@ require('lazy').setup({
     end,
   },
 
-  'nvim-tree/nvim-web-devicons', -- Dependency for nvim-tree
-
   -- NOTE: nvim-tree to navigate through project structure.
   -- See `:help nvim-tree` for more information
   --
@@ -597,6 +602,7 @@ require('lazy').setup({
   {
     'nvim-neo-tree/neo-tree.nvim',
     branch = 'v3.x',
+    lazy = false,
     dependencies = {
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
@@ -604,11 +610,46 @@ require('lazy').setup({
       'jackielii/neo-tree-harpoon.nvim',
     },
     cmd = 'Neotree',
+    init = function()
+      -- If you want icons for diagnostic errors, you'll need to define them somewhere:
+      vim.fn.sign_define('DiagnosticSignError', { text = ' ', texthl = 'DiagnosticSignError' })
+      vim.fn.sign_define('DiagnosticSignWarn', { text = ' ', texthl = 'DiagnosticSignWarn' })
+      vim.fn.sign_define('DiagnosticSignInfo', { text = ' ', texthl = 'DiagnosticSignInfo' })
+      vim.fn.sign_define('DiagnosticSignHint', { text = '󰌵', texthl = 'DiagnosticSignHint' })
+    end,
     opts = {
+      close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
+      enable_git_status = true, -- Enable git status for files
       sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols', 'harpoon-buffers' },
+      default_component_configs = {
+        modified = {
+          symbol = '[+]',
+          highlight = 'NeoTreeModified',
+        },
+        name = {
+          trailing_slash = false,
+          use_git_status_colors = true,
+          highlight = 'NeoTreeFileName',
+        },
+        git_status = {
+          symbols = {
+            -- Change type
+            added = '', -- or "✚", but this is redundant info if you use git_status_colors on the name
+            modified = '', -- or "", but this is redundant info if you use git_status_colors on the name
+            deleted = '✖', -- this can only be used in the git_status source
+            renamed = '󰁕', -- this can only be used in the git_status source
+            -- Status type
+            untracked = '',
+            ignored = '',
+            unstaged = '󰄱',
+            staged = '',
+            conflict = '',
+          },
+        },
+      },
       filesystem = {
         filtered_items = {
-          visible = false, -- when true, they will just be displayed differently than normal items
+          visible = true, -- when true, they will just be displayed differently than normal items
           hide_dotfiles = true,
           hide_gitignored = true,
           hide_hidden = true, -- only works on Windows for hidden files/directories
@@ -645,6 +686,7 @@ require('lazy').setup({
   {
     'folke/edgy.nvim',
     event = 'VimEnter',
+    lazy = false,
     keys = {
       {
         '<leader>e',
@@ -876,7 +918,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons' },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
