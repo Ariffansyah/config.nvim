@@ -483,7 +483,7 @@ require('lazy').setup({
   {
     'ThePrimeagen/harpoon',
     branch = 'harpoon2',
-    dependencies = { 'nvim-lua/plenary.nvim' },
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
     opts = {
       menu = {
         width = vim.api.nvim_win_get_width(0) - 4,
@@ -521,7 +521,7 @@ require('lazy').setup({
           desc = 'Convert [B]uffer to Har[p]oon',
         },
         {
-          '<leader>h',
+          '<leader>H',
           function()
             local harpoon = require 'harpoon'
             harpoon.ui:toggle_quick_menu(harpoon:list())
@@ -618,6 +618,7 @@ require('lazy').setup({
       vim.fn.sign_define('DiagnosticSignHint', { text = '󰌵', texthl = 'DiagnosticSignHint' })
     end,
     opts = {
+      open_files_do_not_replace_types = { 'terminal', 'Trouble', 'qf', 'edgy' },
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       enable_git_status = true, -- Enable git status for files
       sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols', 'harpoon-buffers' },
@@ -630,6 +631,9 @@ require('lazy').setup({
           trailing_slash = false,
           use_git_status_colors = true,
           highlight = 'NeoTreeFileName',
+          format = function(item)
+            return vim.fn.fnamemodify(item.path, ':p') -- Use absolute path
+          end,
         },
         git_status = {
           symbols = {
@@ -672,6 +676,24 @@ require('lazy').setup({
           },
           never_show_by_pattern = { -- uses glob style patterns
             --".null-ls_*",
+          },
+        },
+      },
+      buffers = {
+        window = {
+          mappings = {
+            ['<cr>'] = 'open_with_window_picker',
+            ['l'] = 'open_with_window_picker',
+            ['<2-LeftMouse>'] = 'open_with_window_picker',
+          },
+        },
+        components = {
+          {
+            'name',
+            highlight = 'NeoTreeFileName',
+            format = function(item)
+              return vim.fn.fnamemodify(item.path, ':p') -- Use absolute path
+            end,
           },
         },
       },
@@ -724,7 +746,6 @@ require('lazy').setup({
           open = 'Neotree filesystem',
           size = { height = 0.8, width = 0.15 },
           wo = {
-            winbar = true,
             winfixwidth = true,
           },
         },
@@ -740,7 +761,6 @@ require('lazy').setup({
           open = 'Neotree position=top harpoon-buffers',
           size = { height = 0.2, width = 0.15 },
           wo = {
-            winbar = true,
             winfixwidth = true,
           },
         },
@@ -952,6 +972,8 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+        -- NOTE: We'll be adding our own Harpoon2 picker in the code below extensions
+        -- to allow us to quickly navigate between files in our project.
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -959,6 +981,42 @@ require('lazy').setup({
         },
       }
 
+      -- [[ Configure Harpoon2 ]]
+      -- See `:help harpoon` and `:help harpoon.setup()`
+      -- NOTE: Configuring Harpoon2 integration to Telescope UI
+      -- This allows us to quickly navigate between files in our project.
+      local harpoon = require 'harpoon'
+      local keymap = require 'which-key'
+      local conf = require('telescope.config').values
+      harpoon:setup {}
+      local function toggle_telescope(harpoon_files)
+        local file_paths = {}
+        for _, file in ipairs(harpoon_files.items) do
+          table.insert(file_paths, file.value)
+        end
+
+        require('telescope.pickers')
+          .new({}, {
+            prompt_title = 'Harpoon',
+            finder = require('telescope.finders').new_table {
+              results = file_paths,
+            },
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end
+
+      keymap.add {
+        mode = { 'n', 'v' },
+        {
+          '<leader>h',
+          function()
+            toggle_telescope(harpoon:list())
+          end,
+          desc = '[H]arpoon Fles',
+        },
+      }
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
