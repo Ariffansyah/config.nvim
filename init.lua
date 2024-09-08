@@ -100,11 +100,12 @@ vim.g.loaded_netrwPlugin = 1
 -- [[ General Settings ]]
 -- NOTE: You can change these settings as you wish!
 -- GoLang specific settings
-vim.g.go_fmt_command = 'gofmt'
+vim.g.go_fmt_command = 'gofumpt'
 vim.g.go_auto_type_info = 1
 
 -- Autoformat on save
-vim.cmd [[autocmd BufWritePre *.go,*.ts,*.tsx lua vim.lsp.buf.format({async = true})]]
+-- Using 'conform' for autoformatting code.
+-- vim.cmd [[autocmd BufWritePre *.go,*.ts,*.tsx lua vim.lsp.buf.format({async = true})]]
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -217,6 +218,19 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+-- [[ Go-specific Indentation Setting ]]
+-- See `:help lua-guide-autocommands`
+--
+-- This line adds an autocommand that sets the tabstop, shiftwidth, and expandtab for Go files.
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'go',
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.expandtab = false
   end,
 })
 
@@ -421,18 +435,20 @@ require('lazy').setup({
 
   -- NOTE: Null-ls is a plugin that allows you to use LSP features without an LSP server.
   -- It's a great way to get started with LSP features without needing to install a server.
-  -- {
-  --   'jose-elias-alvarez/null-ls.nvim',
-  --   config = function()
-  --     require('null-ls').setup {
-  --       sources = {
-  --         require('null-ls').builtins.formatting.prettier,
-  --         require('null-ls').builtins.formatting.gofmt,
-  --         require('null-ls').builtins.diagnostics.eslint,
-  --       },
-  --     }
-  --   end,
-  -- },
+  {
+    'jose-elias-alvarez/null-ls.nvim',
+    config = function()
+      require('null-ls').setup {
+        sources = {
+          require('null-ls').builtins.formatting.prettier,
+          require('null-ls').builtins.formatting.gofumpt,
+          require('null-ls').builtins.formatting.goimports,
+          require('null-ls').builtins.formatting.gofmt,
+          require('null-ls').builtins.diagnostics.eslint,
+        },
+      }
+    end,
+  },
 
   -- NOTE: Loading the icon plugins early to prevent any issues with icons.
   -- Most plugins below this will uses icons a lot.
@@ -909,6 +925,24 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: A plugin to help with refactoring code.
+  -- This plugin allows you to easily refactor your code.
+  --
+  -- It's a great way to quickly make changes to your code without having to do it manually.
+  -- ThePrimeagen makes something good other than Harpoon2.
+  {
+    'ThePrimeagen/refactoring.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    config = function()
+      require('refactoring').setup {
+        -- Optional: additional configuration
+      }
+    end,
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -1230,7 +1264,14 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- NOTE: GoLang LSP
-        gopls = {},
+        gopls = {
+          analyses = {
+            unusedparams = true, -- Find unused function parameters
+            nilness = true, -- Check for redundant or missing nil checks
+            shadow = true, -- Detect shadowed variables
+          },
+          staticcheck = true, -- Enable static analysis checks
+        },
 
         -- NOTE: Python LSP
         pyright = {},
@@ -1328,6 +1369,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        go = { 'gofumpt', 'goimports', 'gofmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
