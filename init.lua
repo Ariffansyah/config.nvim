@@ -1283,7 +1283,7 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- NOTE: And of course, you had to use these three set of LSPs.
-        tsserver = {},
+        ts_ls = {},
         tailwindcss = {},
         html = {},
         --
