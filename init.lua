@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
@@ -220,6 +220,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+-- [[ Default Tab Width ]]
+-- Set the default tab width to 4 spaces
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.autoindent = true
 
 -- [[ Go-specific Indentation Setting ]]
 -- See `:help lua-guide-autocommands`
@@ -437,6 +444,7 @@ require('lazy').setup({
   -- It's a great way to get started with LSP features without needing to install a server.
   {
     'jose-elias-alvarez/null-ls.nvim',
+    event = 'VeryLazy',
     config = function()
       require('null-ls').setup {
         sources = {
@@ -444,6 +452,7 @@ require('lazy').setup({
           require('null-ls').builtins.formatting.gofumpt,
           require('null-ls').builtins.formatting.goimports,
           require('null-ls').builtins.formatting.gofmt,
+          require('null-ls').builtins.formatting.clang_format,
           require('null-ls').builtins.diagnostics.eslint,
         },
       }
@@ -1069,6 +1078,24 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
+      -- [[ Custom Telescope Search ]]
+      -- This is used to map for Personal Notes directory.
+      -- Kinda useful if you're looking for something like Inkdrop/Notion but don't wanna use 3rd party services.
+      -- Recommended to install 'iamcco/markdown-preview.nvim' as well to render Markdown notes.
+      -- NOTE: This is for a personal notes directory.
+      keymap.add {
+        mode = { 'n' },
+        {
+          '<leader>sq',
+          function()
+            builtin.find_files {
+              cwd = '~/.notes',
+            }
+          end,
+          desc = '[S]earch for Personal Notes, [Q]',
+        },
+      }
+
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
@@ -1116,6 +1143,7 @@ require('lazy').setup({
       { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      { 'jay-babu/mason-nvim-dap.nvim', config = true, event = 'VeryLazy' },
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -1262,7 +1290,8 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        -- NOTE: C/C++ LSP
+        clangd = {},
         -- NOTE: GoLang LSP
         gopls = {
           analyses = {
@@ -1335,6 +1364,50 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: An experimental config for DAP (Debug Adapter Protocol)
+  -- I dunno why ppl wanna do cpp, just write in golang or rust lmao.
+  -- But hey, it's your choice.
+  --
+  -- This plugin allows you to debug your code in Neovim.
+  -- It's a powerful tool that can help you find and fix bugs in your code.
+  {
+    'mfussenegger/nvim-dap',
+  },
+  {
+    'rcarriga/nvim-dap-ui',
+    event = 'VeryLazy',
+    dependencies = {
+      'mfussenegger/nvim-dap',
+      'nvim-neotest/nvim-nio',
+    },
+    keys = {
+      {
+        '<leader>cu',
+        function()
+          require('dapui').toggle()
+        end,
+        desc = '[D]AP [U]I',
+      },
+    },
+    config = function()
+      local dap = require 'dap'
+      local dapui = require 'dapui'
+
+      dap.listeners.after.event_initialized['dapui_config'] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated['dapui_config'] = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited['dapui_config'] = function()
+        dapui.close()
+      end
+    end,
+  },
+
+  -- NOTE: Sometimes I forgot we have conform.
+  --
+  -- Just a friendly reminder that this plugin exist.
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -1355,7 +1428,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { 'assembly' }
         local lsp_format_opt
         if disable_filetypes[vim.bo[bufnr].filetype] then
           lsp_format_opt = 'never'
