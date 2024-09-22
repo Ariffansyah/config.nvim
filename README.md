@@ -42,6 +42,15 @@ External Requirements:
 - Clipboard tool (xclip/xsel/win32yank or other depending on platform)
 - A [Nerd Font](https://www.nerdfonts.com/): optional, provides various icons
   - if you have it set `vim.g.have_nerd_font` in `init.lua` to true
+- An [ImageMagick](https://github.com/ImageMagick/ImageMagick) installation for image preview in Nvim. For `magick` binding, it will be handled by [this](https://github.com/kiyoon/magick.nvim) plugin so we don't have to install luarocks by ourselves.
+  - Ubuntu: `sudo apt install libmagickwand-dev`
+  - MacOS: `brew install imagemagick`
+    - By default, brew installs into a weird location, so you have to add `$(brew --prefix)/lib` to
+      `DYLD_LIBRARY_PATH` by adding something like
+      `export DYLD_LIBRARY_PATH="$(brew --prefix)/lib:$DYLD_LIBRARY_PATH"`
+      to your shell profile (probably `.zshrc` or `.bashrc`)
+  - Fedora: `sudo dnf install ImageMagick-devel`
+  - Arch: `sudo pacman -Syu imagemagick`
 - Language Setup:
   - If you want to write Typescript, you need `npm`
   - If you want to write Golang, you will need `go`
