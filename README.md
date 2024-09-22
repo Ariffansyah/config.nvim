@@ -55,7 +55,7 @@ External Requirements:
   - If you want to write Typescript, you need `npm`
   - If you want to write Golang, you will need `go`
   - etc.
-- [Silicon](https://github.com/Aloxaf/silicon) to generate a beautiful image of your code
+- [Silicon](https://github.com/Aloxaf/silicon) to generate a beautiful image of your code. Go to `nvim-silicon` using find feature and change the configuration accordingly! (NOTE: It contains my personal font and watermark, so don't forget to change!)
   - `cargo install silicon`
 
 > **NOTE**

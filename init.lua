@@ -342,7 +342,6 @@ require('lazy').setup({
     lazy = true,
     cmd = 'Silicon',
     -- Setting a custom keymap for Silicon.
-    -- See
     init = function()
       local keymap = require 'which-key'
       local silicon = require 'nvim-silicon'
@@ -379,8 +378,10 @@ require('lazy').setup({
       require('nvim-silicon').setup {
         no_line_number = true,
 
-        -- Font used in iTerm2, also Power10k theme font.
+        -- Font used in my WezTerm.
+        -- Feel free to change the fonts accordingly.
         font = 'JetBrainsMono Nerd Font',
+        -- Theme used in Silicon rendering.
         theme = 'Dracula',
 
         -- Setup padding for the image.
@@ -403,6 +404,7 @@ require('lazy').setup({
         --
         -- See `:help silicon` for more information.
         window_title = function()
+          -- WARN: Don't forget to change the watermark, otherwise it will be the same as mine.
           return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), ':t') .. ' by  @billyaddlers'
         end,
       }
@@ -672,7 +674,7 @@ require('lazy').setup({
       max_width = nil,
       max_height = nil,
       max_width_window_percentage = nil,
-      max_height_window_percentage = 75,
+      max_height_window_percentage = 50,
       kitty_method = 'normal',
     },
   },
