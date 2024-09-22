@@ -380,7 +380,7 @@ require('lazy').setup({
         no_line_number = true,
 
         -- Font used in iTerm2, also Power10k theme font.
-        font = 'MesloLGS NF',
+        font = 'JetBrainsMono Nerd Font',
         theme = 'Dracula',
 
         -- Setup padding for the image.
@@ -439,6 +439,7 @@ require('lazy').setup({
 
   -- NOTE: Null-ls is a plugin that allows you to use LSP features without an LSP server.
   -- It's a great way to get started with LSP features without needing to install a server.
+  -- It also offer integration between LSP and other tools like prettier, eslint, etc.
   {
     'jose-elias-alvarez/null-ls.nvim',
     event = 'VeryLazy',
@@ -459,9 +460,12 @@ require('lazy').setup({
   -- NOTE: Loading the icon plugins early to prevent any issues with icons.
   -- Most plugins below this will uses icons a lot.
   {
-    'DaikyXendo/nvim-material-icon',
+    'yamatsum/nvim-nonicons',
     lazy = false,
     dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('nvim-nonicons').setup()
+    end,
   },
   -- Ensure dependencies are also included
   { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
@@ -525,7 +529,7 @@ require('lazy').setup({
         },
         -- NOTE: You most likely won't use this one
         -- But I'll keep it just in case.
-        {
+        --[[         {
           '<leader>bp',
           function()
             local function get_rel_path()
@@ -541,7 +545,9 @@ require('lazy').setup({
             end
           end,
           desc = 'Convert [B]uffer to Har[p]oon',
-        },
+        }, ]]
+        -- Decided to comment it because I don't use it.
+        -- But you can uncomment it if you want to use it.
         {
           '<leader>H',
           function()
@@ -616,6 +622,61 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: A plugin to display images in Neovim.
+  -- I installed both image_preview.nvim which uses kitty terminal under the hood,
+  -- and image.nvim which uses ImageMagick with magick.nvim bindings.
+  --
+  -- We'll test which one is stable and better for our use case.
+  --
+  -- UPDATE: image.nvim is stable and will be used from now on!
+  -- Feel free to fallback to image_preview.nvim if your platform is incompatible with image.nvim
+  -- {
+  --   'adelarsq/image_preview.nvim',
+  --   event = 'VeryLazy',
+  --   config = function()
+  --     require('image_preview').setup()
+  --   end,
+  -- },
+  --
+  -- NOTE: image.nvim is a plugin that allows you to display images in Neovim.
+  -- Visit [This github link](https://github.com/3rd/image.nvim) for basic backend installation.
+  -- ImageMagick is required for this plugin to work.
+  --
+  -- [magick.nvim](https://github.com/kiyoon/magick.nvim) is added as a dependency to reduce the hassle of installing magick Luarock.
+  -- And since MacOS/Arch Linux's default Luarock version is 5.4 and magick doesn't support >5.1, we'll use magick.nvim as a workaround.
+  {
+    '3rd/image.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      'kiyoon/magick.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    opts = {
+      backend = 'kitty',
+      integrations = {
+        markdown = {
+          enabled = true,
+          clear_in_insert_mode = false,
+          download_remote_images = true,
+          only_render_image_at_cursor = false,
+          filetypes = { 'markdown', 'vimwiki' }, -- markdown extensions (ie. quarto) can go here
+        },
+        neorg = {
+          enabled = true,
+          clear_in_insert_mode = false,
+          download_remote_images = true,
+          only_render_image_at_cursor = false,
+          filetypes = { 'norg' },
+        },
+      },
+      max_width = nil,
+      max_height = nil,
+      max_width_window_percentage = nil,
+      max_height_window_percentage = 75,
+      kitty_method = 'normal',
+    },
+  },
+
   -- NOTE: Neo-Tree is a plugin that allows you to navigate through your project structure.
   -- It's a great way to quickly jump between files that you're working on.
   -- We'll be using this from now on instead of Nvim-Tree, because Neo-tree supports buffer source.
@@ -630,6 +691,7 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
       'MunifTanjim/nui.nvim',
       'jackielii/neo-tree-harpoon.nvim',
+      '3rd/image.nvim',
     },
     cmd = 'Neotree',
     init = function()
@@ -641,6 +703,7 @@ require('lazy').setup({
     end,
     opts = {
       open_files_do_not_replace_types = { 'terminal', 'Trouble', 'qf', 'edgy' },
+      use_image_preview = true,
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       enable_git_status = true, -- Enable git status for files
       sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols', 'harpoon-buffers' },
@@ -671,6 +734,24 @@ require('lazy').setup({
             staged = '',
             conflict = '',
           },
+        },
+      },
+      commands = {
+        -- NOTE: Uncomment this if you're using image_preview.nvim for image preview.
+        --
+        -- image_wezterm = function(state)
+        --   local node = state.tree:get_node()
+        --   if node.type == 'file' then
+        --     require('image_preview').PreviewImage(node.path)
+        --   end
+        -- end,
+      },
+      window = {
+        mappings = {
+          -- NOTE: REFER TO THIS TWO LINES BELOW FOR IMAGE PREVIEW MAPPINGS
+          -- Uncomment one of them to use image preview (or just simply use both, it's up to you)
+          ['P'] = { 'toggle_preview', config = { use_float = true, use_image_nvim = true, use_image_preview = true } },
+          -- ['I'] = 'image_wezterm',
         },
       },
       filesystem = {
@@ -828,7 +909,14 @@ require('lazy').setup({
   {
     'windwp/nvim-autopairs',
     event = 'InsertEnter',
-    config = true,
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'hrsh7th/nvim-cmp' },
+    config = function()
+      require('nvim-autopairs').setup {}
+      -- Adding cmp autopairs
+      local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
+      local cmp = require 'cmp'
+      cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done {})
+    end,
     -- use opts = {} for passing setup options
     -- this is equivalent to setup({}) function
   },
