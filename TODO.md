@@ -9,3 +9,4 @@ This is just my personal note to improve this Neovim Configurations, don't mind 
 - [x] Adding image preview in neo-tree (ImageMagick backend).
 - [ ] Will probably moving Harpoon Buffers to Bufferline/Lualine/Heirline.
 - [ ] Full revamp of the configuration file so it doesn't clutter init.lua, but still maintain the well documented and easy to read.
+- [x] Adding autoclosing tags for HTML, JSX, TSX, etc.
