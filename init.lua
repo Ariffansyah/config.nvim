@@ -311,16 +311,20 @@ require('lazy').setup({
   -- NOTE: GitHub Copilot Plugin so I can gitgud.
   --
   -- adds some good ol' code generation and code completion
-  'github/copilot.vim',
+  {
+    'github/copilot.vim',
+    enabled = false,
+  },
   {
     'CopilotC-Nvim/CopilotChat.nvim', -- Copilot Chat
+    enabled = false,
     branch = 'canary',
     init = function()
       local copilot = require 'CopilotChat'
       local keymap = require 'which-key'
       keymap.add {
         mode = { 'n', 'v' },
-        { '<leader>cc', 'CopilotChatToggle', desc = 'Copilot Chat' },
+        { '<leader>cc', '<cmd>CopilotChatToggle <CR>', desc = 'Copilot Chat' },
       }
     end,
     dependencies = {
@@ -444,6 +448,7 @@ require('lazy').setup({
   -- It also offer integration between LSP and other tools like prettier, eslint, etc.
   {
     'jose-elias-alvarez/null-ls.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
     event = 'VeryLazy',
     config = function()
       require('null-ls').setup {
@@ -458,6 +463,8 @@ require('lazy').setup({
       }
     end,
   },
+  -- Ensure dependencies are also included
+  { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
 
   -- NOTE: Loading the icon plugins early to prevent any issues with icons.
   -- Most plugins below this will uses icons a lot.
@@ -469,8 +476,6 @@ require('lazy').setup({
       require('nvim-nonicons').setup()
     end,
   },
-  -- Ensure dependencies are also included
-  { 'nvim-lua/plenary.nvim' }, -- Dependency for null-ls
 
   { -- Statusline bottom-side
     -- NOTE: Will use heirline.nvim someday, for now I'll stick with lualine.
@@ -501,7 +506,143 @@ require('lazy').setup({
   --  }
   -- },
 
-  { 'echasnovski/mini.bufremove', lazy = true },
+  -- { 'echasnovski/mini.bufremove', lazy = true },
+  { -- Statusline upper-side
+    -- NOTE: Will use heirline.nvim someday, for now I'll stick with bufferline.
+    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
+    'akinsho/bufferline.nvim',
+    version = '*', -- Use the latest version on startup
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    init = function()
+      -- NOTE: Adding custom keymaps for bufferline
+      -- See `:help bufferline` for more information
+      --
+      local keymap = require 'which-key'
+
+      -- NOTE: Adding custom keymaps for bufferline
+      -- This one is focused on navigating between splits, closing splits, and moving between splits.
+      keymap.add {
+        { mode = 'n' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>ws, <cmd>split <CR>', desc = '[W]orkspace [S]plit' },
+        { '<leader>wh, <cmd>vsplit <CR>', desc = '[W]orkspace [H]orizontal split' },
+        { '<leader>wq, <cmd>q <CR>', desc = '[W]orkspace [Q]uit' },
+        { '<leader>ww, <cmd>BufferLineCycleNext', desc = '[W]orkspace [W]indow, also refer to SPACE-] for navigation' },
+        { '<leader>wj, <cmd>BufferLineCyclePrev', desc = '[W]orkspace [J]ump, also refer to SPACE-[ for navigation' },
+      }
+    end,
+    config = function()
+      -- WARN: THERE'S A LOT OF BREAKING PARTS ON THIS CONFIG, PROCEED EDITING WITH CAUTIONS!
+      -- Will find more efficient way later, for now just trust me.
+      local harpoon = require 'harpoon'
+      local bufferline = require 'bufferline'
+
+      -- Filter Bufferline to only display buffers in the Harpoon list
+      local function get_harpoon_buffers()
+        local harpoon_list = harpoon:list()
+        local harpoon_buffers = {}
+
+        -- Assuming harpoon:list() returns a list of file paths, map to buffer numbers
+        for _, item in ipairs(harpoon_list.items) do
+          local filepath = item.value
+          local buf_nr = vim.fn.bufnr(filepath, true)
+          if buf_nr ~= -1 then
+            table.insert(harpoon_buffers, buf_nr)
+          end
+        end
+
+        -- Return our list of buffers
+        return harpoon_buffers
+      end
+
+      -- Remove buffer from Harpoon when it's closed
+      local function remove_from_harpoon(buf_number)
+        local harpoon_list = harpoon:list()
+
+        -- Get the name of the buffer being closed
+        local closed_buf_name = vim.fn.bufname(buf_number)
+
+        -- Remove it from Harpoon's list
+        for i, item in ipairs(harpoon_list.items) do
+          if item.value == closed_buf_name then
+            harpoon_list:remove_at(i)
+            print('Buffer ' .. closed_buf_name .. ' removed from Harpoon')
+            return
+          end
+        end
+      end
+
+      -- Ensure buffers from Harpoon are initialized in Neovim
+      local function initialize_harpoon_buffers()
+        local harpoon_list = harpoon:list()
+
+        -- Open buffers for each item in the Harpoon list
+        for _, item in ipairs(harpoon_list.items) do
+          local filepath = item.value
+          if vim.fn.bufnr(filepath) == -1 then
+            vim.cmd('badd ' .. filepath) -- Open buffer for each file
+          end
+        end
+      end
+
+      -- Focus the file that is being opened in the terminal
+      local function prioritize_opened_file()
+        local opened_file = vim.fn.expand '%:p' -- Get the full path of the currently opened file
+        local harpoon_list = harpoon:list()
+
+        -- Check if the file is in the Harpoon list and focus it
+        for _, item in ipairs(harpoon_list.items) do
+          if item.value == opened_file then
+            vim.cmd('buffer ' .. vim.fn.bufnr(opened_file)) -- Focus the opened buffer
+            return
+          end
+        end
+      end
+
+      -- Initialize harpoon buffers into bufferline
+      --
+      -- WARN: There's some suspicion for memory leaks from using this kind of workaround.
+      -- But we'll see later.
+      initialize_harpoon_buffers()
+      -- Create an autocmd to prioritize opened file in nvim.
+      vim.api.nvim_create_autocmd('BufReadPost', {
+        pattern = '*',
+        callback = function()
+          prioritize_opened_file()
+        end,
+      })
+
+      -- Set up Bufferline with filtered buffers from Harpoon
+      bufferline.setup {
+        options = {
+          numbers = 'ordinal',
+          diagnostics = 'nvim_lsp',
+          diagnostics_indicator = function(count, level)
+            return '(' .. count .. ')'
+          end,
+          show_tab_indicators = true,
+          separator_style = 'thin',
+          always_show_bufferline = true,
+          custom_filter = function(buf_number)
+            local harpoon_buffers = get_harpoon_buffers()
+            -- Only show buffers that are part of the Harpoon list
+            for _, buf in ipairs(harpoon_buffers) do
+              if buf == buf_number then
+                return true
+              end
+            end
+            return false
+          end,
+          -- Custom close command to remove buffer from Harpoon
+          close_command = function(buf_number)
+            remove_from_harpoon(buf_number)
+            -- Then proceed with the normal buffer closing
+            vim.api.nvim_buf_delete(buf_number, { force = true })
+          end,
+        },
+      }
+    end,
+  },
 
   -- NOTE: Harpoon
   -- it just works.
@@ -598,11 +739,8 @@ require('lazy').setup({
       -- The following keymaps are used to toggle the tree, find the current file, and refresh the tree.
       --
       -- vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle [E]xplorer' })
-      --
-      -- WARN: We're migrating nvim-tree to neo-tree for buffer support!
-      -- Please remove anything related to nvim-tree to prevent breaking changes.
-      --
-      -- It's just here to provide backup and fallback in case neo-tree is not working.
+      -- WARN: We're moving filesystem manager to neotree for image preview support.
+      -- nvim-tree exist to provide fallback if neotree goes wrong.
       require('nvim-tree').setup {
         update_focused_file = {
           enable = true,
@@ -694,10 +832,13 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
       'MunifTanjim/nui.nvim',
-      'jackielii/neo-tree-harpoon.nvim',
       '3rd/image.nvim',
     },
     cmd = 'Neotree',
+    keys = {
+      mode = { 'n' },
+      { '<leader>e', '<cmd>Neotree toggle <CR>', desc = 'Open File [E]xplorer' },
+    },
     init = function()
       -- If you want icons for diagnostic errors, you'll need to define them somewhere:
       vim.fn.sign_define('DiagnosticSignError', { text = ' ', texthl = 'DiagnosticSignError' })
@@ -710,7 +851,7 @@ require('lazy').setup({
       use_image_preview = true,
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       enable_git_status = true, -- Enable git status for files
-      sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols', 'harpoon-buffers' },
+      sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols' },
       default_component_configs = {
         modified = {
           symbol = '[+]',
@@ -803,75 +944,6 @@ require('lazy').setup({
             end,
           },
         },
-      },
-    },
-  },
-
-  -- NOTE: A tiling manager plugin for Neovim.
-  -- It works by attaching a fixed window to the current workspace.
-  --
-  -- This allows you to custom configure your workspace to your liking.
-  -- For now, it is used to display filesystem via Neo-Tree and current working Harpoon Buffers.
-  {
-    'folke/edgy.nvim',
-    event = 'VimEnter',
-    lazy = false,
-    keys = {
-      {
-        '<leader>e',
-        function()
-          require('edgy').toggle()
-        end,
-        desc = 'Edgy Toggle',
-      },
-      {
-        '<leader>E',
-        function()
-          require('edgy').select()
-        end,
-        desc = 'Edgy Select Window',
-      },
-    },
-    opts = {
-      -- Disable eye-hurting animations, because why not.
-      animate = {
-        enabled = false,
-      },
-      exit_when_last = true,
-      left = {
-        -- NOTE: This is the default configuration for left-side workspace.
-        -- It will display Neo-Tree and Harpoon Buffers.
-        --
-        -- Visit https://github.com/nvim-neo-tree/neo-tree.nvim?tab=readme-ov-file#external-sources for more info.
-        {
-          title = 'Neo-Tree',
-          ft = 'neo-tree',
-          filter = function(buf)
-            return vim.b[buf].neo_tree_source == 'filesystem'
-          end,
-          pinned = true,
-          open = 'Neotree filesystem',
-          size = { height = 0.8, width = 0.15 },
-          wo = {
-            winfixwidth = true,
-          },
-        },
-        -- Harpoon Buffers using custom source.
-        -- Visit https://github.com/jackielii/neo-tree-harpoon.nvim for more info.
-        {
-          title = 'Harpoon Buffers',
-          ft = 'neo-tree',
-          filter = function(buf)
-            return vim.b[buf].neo_tree_source == 'harpoon-buffers'
-          end,
-          pinned = true,
-          open = 'Neotree position=top harpoon-buffers',
-          size = { height = 0.2, width = 0.15 },
-          wo = {
-            winfixwidth = true,
-          },
-        },
-        'neo-tree',
       },
     },
   },
@@ -974,7 +1046,9 @@ require('lazy').setup({
         underline = true,
         virtual_text = {
           spacing = 5,
-          severity_limit = 'Warning',
+          min = {
+            severity = 'warnings',
+          },
         },
         update_in_insert = true,
       })
@@ -1176,7 +1250,14 @@ require('lazy').setup({
       local harpoon = require 'harpoon'
       local keymap = require 'which-key'
       local conf = require('telescope.config').values
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
+      local builtin = require 'telescope.builtin'
+
+      -- Re-init harpoon configurations
       harpoon:setup {}
+
+      -- Displaying harpoon buffers in Telescope UI
       local function toggle_telescope(harpoon_files)
         local file_paths = {}
         for _, file in ipairs(harpoon_files.items) do
@@ -1185,12 +1266,42 @@ require('lazy').setup({
 
         require('telescope.pickers')
           .new({}, {
-            prompt_title = 'Harpoon',
+            prompt_title = 'Harpoon Buffers',
             finder = require('telescope.finders').new_table {
               results = file_paths,
             },
             previewer = conf.file_previewer {},
             sorter = conf.generic_sorter {},
+            -- Adding custom mappings so Harpoon buffers can be removed from Telescope UI
+            attach_mappings = function(prompt_bufnr, map)
+              -- Custom action to remove buffer from Harpoon
+              local function remove_buffer()
+                local selection = action_state.get_selected_entry()
+                local selected_file = selection[1]
+
+                -- Find the index of the selected file in Harpoon list and remove it
+                for i, item in ipairs(harpoon:list().items) do
+                  if item.value == selected_file then
+                    harpoon:list():remove_at(i)
+                    print('Removed ' .. selected_file .. ' from Harpoon')
+                    break
+                  end
+                end
+
+                -- Close the current Telescope UI
+                -- actions.close(prompt_bufnr)
+
+                -- Refresh the Telescope picker with the updated Harpoon list
+                toggle_telescope(harpoon:list()) -- Call toggle_telescope again with updated list
+              end
+
+              -- Map custom action to key (e.g., <C-d> to delete)
+              map('i', '<C-d>', remove_buffer)
+              map('n', '<C-d>', remove_buffer)
+              map('n', 'dd', remove_buffer)
+
+              return true
+            end,
           })
           :find()
       end
