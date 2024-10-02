@@ -118,6 +118,9 @@ vim.opt.number = true
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
 
+-- Enabling termguicolors
+vim.opt.termguicolors = true
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
@@ -484,6 +487,36 @@ require('lazy').setup({
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       require('lualine').setup {
+        sections = {
+          lualine_x = {
+            -- @diagnostic disable-next-line: undefined-field
+            {
+              require('noice').api.status.message.get_hl,
+              cond = require('noice').api.status.message.has,
+            },
+            -- @diagnostic disable-next-line: undefined-field
+            {
+              require('noice').api.status.command.get,
+              cond = require('noice').api.status.command.has,
+              color = { fg = '#ff9e64' },
+            },
+            -- @diagnostic disable-next-line: undefined-field
+            {
+              require('noice').api.status.mode.get,
+              cond = require('noice').api.status.mode.has,
+              color = { fg = '#ff9e64' },
+            },
+            -- @diagnostic disable-next-line: undefined-field
+            {
+              require('noice').api.status.search.get,
+              cond = require('noice').api.status.search.has,
+              color = { fg = '#ff9e64' },
+            },
+            'encoding',
+            'fileformat',
+            'filetype',
+          },
+        },
         options = {
           icons_enabled = true,
           theme = 'catppuccin', -- was 'horizon' before
@@ -670,27 +703,6 @@ require('lazy').setup({
           end,
           desc = 'H[a]rpoon File',
         },
-        -- NOTE: You most likely won't use this one
-        -- But I'll keep it just in case.
-        --[[         {
-          '<leader>bp',
-          function()
-            local function get_rel_path()
-              local Path = require 'plenary.path'
-              local path = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
-              return Path:new(path):make_relative(vim.loop.cwd())
-            end
-            local list = require('harpoon'):list()
-            if list:get_by_value(get_rel_path()) then
-              list:remove()
-            else
-              list:add()
-            end
-          end,
-          desc = 'Convert [B]uffer to Har[p]oon',
-        }, ]]
-        -- Decided to comment it because I don't use it.
-        -- But you can uncomment it if you want to use it.
         {
           '<leader>H',
           function()
@@ -951,11 +963,41 @@ require('lazy').setup({
   -- NOTE: Comment plugin to comment out code
   {
     'numToStr/Comment.nvim',
+    event = 'BufReadPre',
+    lazy = false,
+    dependencies = {
+      'JoosepAlviste/nvim-ts-context-commentstring',
+      'nvim-treesitter/nvim-treesitter',
+    },
     config = function()
       -- Lmao I forgot to initialize config.
-      require('Comment').setup()
+      local prehook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook()
+      require('Comment').setup {
+        padding = true,
+        sticky = true,
+        ignore = '^$',
+        toggler = {
+          line = 'gcc',
+          block = 'gbc',
+        },
+        opleader = {
+          line = 'gc',
+          block = 'gb',
+        },
+        extra = {
+          above = 'gcO',
+          below = 'gco',
+          eol = 'gcA',
+        },
+        mappings = {
+          basic = true,
+          extra = true,
+          extended = false,
+        },
+        pre_hook = prehook,
+        post_hook = nil,
+      }
     end,
-    opts = {},
   },
 
   --NOTE: You can never get lazier, even if it's NeoVim!
@@ -976,7 +1018,7 @@ require('lazy').setup({
     -- setting the keybinding for LazyGit with 'keys' is recommended in
     -- order to load the plugin when the command is run for the first time
     keys = {
-      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+      { '<leader>g', '<cmd>LazyGit<cr>', desc = '[L]azy [G]it' },
     },
   },
 
@@ -1136,6 +1178,102 @@ require('lazy').setup({
     },
   },
 
+  -- NOTE: Configuring nvim-notify because it kept throwing warnings
+  {
+    'rcarriga/nvim-notify',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+    },
+    init = function()
+      local notify = require 'notify'
+
+      -- Replacing default vim.notify with nvim-notify
+      vim.notify = notify
+    end,
+    opts = {
+      background_colour = '#1e1e1e', -- Darker background color
+      timeout = 5000, -- Adjust timeout for notifications
+      stages = 'fade', -- Customize animation stages if needed
+    },
+  },
+
+  -- NOTE: A highly experimental plugin that completely replaces the UI for `messages`, `cmdline`, and the `popupmenu`
+  -- Sir Folke made something good other than which-key
+  --
+  -- All hail Neovim!
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    opts = {
+      markdown = {
+        renderer = 'treesitter',
+      },
+      lsp = {
+        -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+        override = {
+          ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
+          ['vim.lsp.util.stylize_markdown'] = true,
+          ['cmp.entry.get_documentation'] = true, -- requires hrsh7th/nvim-cmp
+        },
+      },
+      -- you can enable a preset for easier configuration
+      presets = {
+        bottom_search = false, -- use a classic bottom cmdline for search
+        command_palette = false, -- position the cmdline and popupmenu together
+        long_message_to_split = true, -- long messages will be sent to a split
+        inc_rename = false, -- enables an input dialog for inc-rename.nvim
+        lsp_doc_border = false, -- add a border to hover docs and signature help
+      },
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      'MunifTanjim/nui.nvim',
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      'rcarriga/nvim-notify',
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
+
+  -- NOTE: `flash.nvim` lets you navigate your code with search labels, enhanced character motions, and Treesitter integration.
+  -- Sir Folke made something good other than which-key
+  --
+  -- All hail Neovim!
+  {
+    'folke/flash.nvim',
+    event = 'VeryLazy',
+    opts = {},
+    keys = {
+      -- I only opt for 2 shortcut, this is all I need for my workload
+      -- Feel free to add shortcut yourselves!
+      {
+        's',
+        mode = { 'n', 'x', 'o' },
+        function()
+          require('flash').jump()
+        end,
+        desc = '[S]lash',
+      },
+      {
+        'S',
+        mode = { 'n', 'x', 'o' },
+        function()
+          require('flash').treesitter()
+        end,
+        desc = '[S]lash treesitter',
+      },
+      {
+        '<c-s>',
+        mode = { 'c' },
+        function()
+          require('flash').toggle()
+        end,
+        desc = 'Toggle Flash [S]earch',
+      },
+    },
+  },
+
   -- NOTE: A plugin to show you the keymaps that are available in Neovim.
   --
   -- Greet you with something greater than yourself.
@@ -1168,6 +1306,9 @@ require('lazy').setup({
       require('refactoring').setup {
         -- Optional: additional configuration
       }
+      vim.keymap.set({ 'n', 'x' }, '<leader>rr', function()
+        require('refactoring').select_refactor()
+      end, { desc = 'Advanced [R]efactoring' })
     end,
   },
 
@@ -1320,6 +1461,8 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
       pcall(require('telescope').load_extension, 'harpoon')
+      pcall(require('telescope').load_extension 'notify')
+      pcall(require('telescope').load_extension 'refactoring')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -2021,7 +2164,23 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'typescript', 'tsx', 'go', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'typescript',
+        'tsx',
+        'go',
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'regex',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
