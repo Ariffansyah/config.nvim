@@ -283,6 +283,9 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  -- NOTE: Plugin to check startup time
+  -- Good to check any overhead plugins
+  'dstein64/vim-startuptime',
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -489,11 +492,7 @@ require('lazy').setup({
       require('lualine').setup {
         sections = {
           lualine_x = {
-            -- @diagnostic disable-next-line: undefined-field
-            {
-              require('noice').api.status.message.get_hl,
-              cond = require('noice').api.status.message.has,
-            },
+            'aerial',
             -- @diagnostic disable-next-line: undefined-field
             {
               require('noice').api.status.command.get,
@@ -592,7 +591,7 @@ require('lazy').setup({
       local function remove_from_harpoon(buf_number)
         local harpoon_list = harpoon:list()
 
-        -- Get the name of the buffer being closed
+        -- Get the ,ame of the buffer being closed
         local closed_buf_name = vim.fn.bufname(buf_number)
 
         -- Remove it from Harpoon's list
@@ -649,12 +648,34 @@ require('lazy').setup({
       bufferline.setup {
         options = {
           numbers = 'ordinal',
+          offsets = {
+            {
+              filetype = 'neo-tree',
+              text = 'Filesystem',
+              separator = true,
+              text_align = 'center',
+            },
+            {
+              filetype = 'aerial',
+              text = 'Outline',
+              separator = true,
+              text_align = 'center',
+            },
+          },
           diagnostics = 'nvim_lsp',
-          diagnostics_indicator = function(count, level)
-            return '(' .. count .. ')'
+          diagnostics_indicator = function(count, level, diagnostics_dict, context)
+            local s = ' '
+            for e, n in pairs(diagnostics_dict) do
+              local sym = e == 'error' and ' ' or (e == 'warning' and ' ' or ' ')
+              s = s .. n .. sym
+            end
+            return s
           end,
           show_tab_indicators = true,
-          separator_style = 'thin',
+          indicator = {
+            style = 'underline',
+          },
+          separator_style = 'slant',
           always_show_bufferline = true,
           custom_filter = function(buf_number)
             local harpoon_buffers = get_harpoon_buffers()
@@ -904,11 +925,19 @@ require('lazy').setup({
         -- end,
       },
       window = {
+        position = 'left',
+        width = 30,
         mappings = {
           -- NOTE: REFER TO THIS TWO LINES BELOW FOR IMAGE PREVIEW MAPPINGS
           -- Uncomment one of them to use image preview (or just simply use both, it's up to you)
           ['P'] = { 'toggle_preview', config = { use_float = true, use_image_nvim = true, use_image_preview = true } },
           -- ['I'] = 'image_wezterm',
+          --
+          -- These lines below are standard mappings for neo-tree
+          -- Feel free to add more.
+          ['l'] = 'focus_preview',
+          ['S'] = 'open_split',
+          ['s'] = 'open_vsplit',
         },
       },
       filesystem = {
@@ -958,6 +987,36 @@ require('lazy').setup({
         },
       },
     },
+  },
+
+  -- NOTE: Plugin to display Outline of current open buffer.
+  --
+  -- A robust tool second to Neo-tree for code management.
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
+    },
+    init = function()
+      require('aerial').setup {
+        layout = {
+          width = 30,
+          default_direction = 'right',
+          placement = 'edge',
+        },
+        -- optionally use on_attach to set keymaps when aerial has attached to a buffer
+        on_attach = function(bufnr)
+          -- Jump forwards/backwards with '{' and '}'
+          vim.keymap.set('n', '{', '<cmd>AerialPrev<CR>', { buffer = bufnr })
+          vim.keymap.set('n', '}', '<cmd>AerialNext<CR>', { buffer = bufnr })
+        end,
+      }
+      -- You probably also want to set a keymap to toggle aerial
+      vim.keymap.set('n', '<leader>E', '<cmd>AerialToggle!<CR>', { desc = 'Toggle Aerial [E]xplorer' })
+    end,
   },
 
   -- NOTE: Comment plugin to comment out code
@@ -1463,6 +1522,7 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'harpoon')
       pcall(require('telescope').load_extension 'notify')
       pcall(require('telescope').load_extension 'refactoring')
+      pcall(require('telescope').load_extension 'aerial')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -2086,7 +2146,7 @@ require('lazy').setup({
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
       -- vim.cmd.colorscheme 'tokyonight-night'
-      vim.cmd.colorscheme 'catppuccin'
+      vim.cmd.colorscheme 'catppuccin-frappe'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
