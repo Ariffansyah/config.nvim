@@ -474,14 +474,14 @@ require('lazy').setup({
 
   -- NOTE: Loading the icon plugins early to prevent any issues with icons.
   -- Most plugins below this will uses icons a lot.
-  {
-    'yamatsum/nvim-nonicons',
-    lazy = false,
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    config = function()
-      require('nvim-nonicons').setup()
-    end,
-  },
+  -- {
+  --   'yamatsum/nvim-nonicons',
+  --   lazy = false,
+  --   dependencies = { 'nvim-tree/nvim-web-devicons' },
+  --   config = function()
+  --     require('nvim-nonicons').setup()
+  --   end,
+  -- },
 
   { -- Statusline bottom-side
     -- NOTE: Will use heirline.nvim someday, for now I'll stick with lualine.
@@ -1760,6 +1760,8 @@ require('lazy').setup({
           },
           staticcheck = true, -- Enable static analysis checks
         },
+        -- NOTE: Rust LSP
+        rust_analyzer = {},
 
         -- NOTE: Python LSP
         pyright = {},
@@ -1770,12 +1772,25 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- NOTE: And of course, you had to use these three set of LSPs.
+        -- NOTE: And of course, you had to use these set of LSPs.
         ts_ls = {},
+        eslint = {},
         tailwindcss = {},
         html = {},
+        -- Framework-specific LSP
+        angularls = {},
+        volar = {},
+        -- KingTS on top!
         --
+        -- Additional necessities for personal development
+        -- NOTE: Docker stuff
+        dockerls = {},
+        docker_compose_language_service = {},
 
+        -- NOTE: Arduino Language Server
+        arduino_language_server = {},
+
+        -- NOTE: Lua LSP
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -2203,6 +2218,10 @@ require('lazy').setup({
           end,
         },
       }
+
+      local minicon = require 'mini.icons'
+      minicon.setup()
+      minicon.mock_nvim_web_devicons()
 
       local statusline = require 'mini.statusline'
 
