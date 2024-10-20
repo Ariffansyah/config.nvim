@@ -464,7 +464,6 @@ require('lazy').setup({
           require('null-ls').builtins.formatting.goimports,
           require('null-ls').builtins.formatting.gofmt,
           require('null-ls').builtins.formatting.clang_format,
-          require('null-ls').builtins.diagnostics.eslint,
         },
       }
     end,
