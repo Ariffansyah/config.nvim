@@ -421,6 +421,12 @@ require('lazy').setup({
     end,
   },
 
+  -- NOTE: A Vim-based plugin to show assigned color in hex codes
+  -- Minimal config with virtual display besides hex codes.
+  {
+    'rrethy/vim-hexokinase',
+  },
+
   -- NOTE: A plugin to navigate between tmux panes and vim splits.
   -- See `:help vim-tmux-navigator` for more information.
   -- This plugin allows you to use the same keybinds to navigate between tmux panes and vim splits.
@@ -527,175 +533,7 @@ require('lazy').setup({
     end,
   },
 
-  -- WARN: Delete both bufferline and lualine if you were to use heirline.
-  -- REMEMBER: With great strength comes great responsibility
-  -- {
-  --  'rebelot/heirline.nvim',
-  --  require('heirline').setup {
-  --    -- Configuration goes here
-  --    -- Visit https://github.com/rebelot/heirline.nvim for more information
-  --  }
-  -- },
-
-  -- { 'echasnovski/mini.bufremove', lazy = true },
-  { -- Statusline upper-side
-    -- NOTE: Will use heirline.nvim someday, for now I'll stick with bufferline.
-    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
-    'akinsho/bufferline.nvim',
-    version = '*', -- Use the latest version on startup
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    init = function()
-      -- NOTE: Adding custom keymaps for bufferline
-      -- See `:help bufferline` for more information
-      --
-      local keymap = require 'which-key'
-
-      -- NOTE: Adding custom keymaps for bufferline
-      -- This one is focused on navigating between splits, closing splits, and moving between splits.
-      keymap.add {
-        { mode = 'n' },
-        { '<leader>w', group = '[W]orkspace' },
-        { '<leader>ws, <cmd>split <CR>', desc = '[W]orkspace [S]plit' },
-        { '<leader>wh, <cmd>vsplit <CR>', desc = '[W]orkspace [H]orizontal split' },
-        { '<leader>wq, <cmd>q <CR>', desc = '[W]orkspace [Q]uit' },
-        { '<leader>ww, <cmd>BufferLineCycleNext', desc = '[W]orkspace [W]indow, also refer to SPACE-] for navigation' },
-        { '<leader>wj, <cmd>BufferLineCyclePrev', desc = '[W]orkspace [J]ump, also refer to SPACE-[ for navigation' },
-      }
-    end,
-    config = function()
-      -- WARN: THERE'S A LOT OF BREAKING PARTS ON THIS CONFIG, PROCEED EDITING WITH CAUTIONS!
-      -- Will find more efficient way later, for now just trust me.
-      local harpoon = require 'harpoon'
-      local bufferline = require 'bufferline'
-
-      -- Filter Bufferline to only display buffers in the Harpoon list
-      local function get_harpoon_buffers()
-        local harpoon_list = harpoon:list()
-        local harpoon_buffers = {}
-
-        -- Assuming harpoon:list() returns a list of file paths, map to buffer numbers
-        for _, item in ipairs(harpoon_list.items) do
-          local filepath = item.value
-          local buf_nr = vim.fn.bufnr(filepath, true)
-          if buf_nr ~= -1 then
-            table.insert(harpoon_buffers, buf_nr)
-          end
-        end
-
-        -- Return our list of buffers
-        return harpoon_buffers
-      end
-
-      -- Remove buffer from Harpoon when it's closed
-      local function remove_from_harpoon(buf_number)
-        local harpoon_list = harpoon:list()
-
-        -- Get the ,ame of the buffer being closed
-        local closed_buf_name = vim.fn.bufname(buf_number)
-
-        -- Remove it from Harpoon's list
-        for i, item in ipairs(harpoon_list.items) do
-          if item.value == closed_buf_name then
-            harpoon_list:remove_at(i)
-            print('Buffer ' .. closed_buf_name .. ' removed from Harpoon')
-            return
-          end
-        end
-      end
-
-      -- Ensure buffers from Harpoon are initialized in Neovim
-      local function initialize_harpoon_buffers()
-        local harpoon_list = harpoon:list()
-
-        -- Open buffers for each item in the Harpoon list
-        for _, item in ipairs(harpoon_list.items) do
-          local filepath = item.value
-          if vim.fn.bufnr(filepath) == -1 then
-            vim.cmd('badd ' .. filepath) -- Open buffer for each file
-          end
-        end
-      end
-
-      -- Focus the file that is being opened in the terminal
-      local function prioritize_opened_file()
-        local opened_file = vim.fn.expand '%:p' -- Get the full path of the currently opened file
-        local harpoon_list = harpoon:list()
-
-        -- Check if the file is in the Harpoon list and focus it
-        for _, item in ipairs(harpoon_list.items) do
-          if item.value == opened_file then
-            vim.cmd('buffer ' .. vim.fn.bufnr(opened_file)) -- Focus the opened buffer
-            return
-          end
-        end
-      end
-
-      -- Initialize harpoon buffers into bufferline
-      --
-      -- WARN: There's some suspicion for memory leaks from using this kind of workaround.
-      -- But we'll see later.
-      initialize_harpoon_buffers()
-      -- Create an autocmd to prioritize opened file in nvim.
-      vim.api.nvim_create_autocmd('BufReadPost', {
-        pattern = '*',
-        callback = function()
-          prioritize_opened_file()
-        end,
-      })
-
-      -- Set up Bufferline with filtered buffers from Harpoon
-      bufferline.setup {
-        options = {
-          numbers = 'ordinal',
-          offsets = {
-            {
-              filetype = 'neo-tree',
-              text = 'Filesystem',
-              separator = true,
-              text_align = 'center',
-            },
-            {
-              filetype = 'aerial',
-              text = 'Outline',
-              separator = true,
-              text_align = 'center',
-            },
-          },
-          diagnostics = 'nvim_lsp',
-          diagnostics_indicator = function(count, level, diagnostics_dict, context)
-            local s = ' '
-            for e, n in pairs(diagnostics_dict) do
-              local sym = e == 'error' and ' ' or (e == 'warning' and ' ' or ' ')
-              s = s .. n .. sym
-            end
-            return s
-          end,
-          show_tab_indicators = true,
-          indicator = {
-            style = 'underline',
-          },
-          separator_style = 'slant',
-          always_show_bufferline = true,
-          custom_filter = function(buf_number)
-            local harpoon_buffers = get_harpoon_buffers()
-            -- Only show buffers that are part of the Harpoon list
-            for _, buf in ipairs(harpoon_buffers) do
-              if buf == buf_number then
-                return true
-              end
-            end
-            return false
-          end,
-          -- Custom close command to remove buffer from Harpoon
-          close_command = function(buf_number)
-            remove_from_harpoon(buf_number)
-            -- Then proceed with the normal buffer closing
-            vim.api.nvim_buf_delete(buf_number, { force = true })
-          end,
-        },
-      }
-    end,
-  },
+  { 'echasnovski/mini.bufremove', lazy = true },
 
   -- NOTE: Harpoon
   -- it just works.
@@ -1779,6 +1617,7 @@ require('lazy').setup({
         -- Framework-specific LSP
         angularls = {},
         volar = {},
+        svelte = {},
         -- KingTS on top!
         --
         -- Additional necessities for personal development
@@ -2051,12 +1890,28 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
+          {
+            'js-everts/cmp-tailwind-colors',
+            config = function()
+              require('cmp-tailwind-colors').setup {
+                enable_alpha = true, -- requires pumblend > 0.
+
+                format = function(itemColor)
+                  return {
+                    fg = itemColor,
+                    bg = itemColor, -- or nil if you dont want a background color
+                    text = '  ', -- or use an icon
+                  }
+                end,
+              }
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -2073,7 +1928,46 @@ require('lazy').setup({
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
 
+      local kind_icons = {
+        Text = '',
+        Method = '󰆧',
+        Function = '󰊕',
+        Constructor = '',
+        Field = '󰇽',
+        Variable = '󰂡',
+        Class = '󰠱',
+        Interface = '',
+        Module = '',
+        Property = '󰜢',
+        Unit = '',
+        Value = '󰎠',
+        Enum = '',
+        Keyword = '󰌋',
+        Snippet = '',
+        Color = '󰏘',
+        File = '󰈙',
+        Reference = '',
+        Folder = '󰉋',
+        EnumMember = '',
+        Constant = '󰏿',
+        Struct = '',
+        Event = '',
+        Operator = '󰆕',
+        TypeParameter = '󰅲',
+      }
+
       cmp.setup {
+        formatting = {
+          fields = { 'kind', 'abbr', 'menu' }, -- order of columns,
+          format = function(entry, item)
+            item.menu = item.kind
+            item = require('cmp-tailwind-colors').format(entry, item)
+            if kind_icons[item.kind] then
+              item.kind = kind_icons[item.kind] .. ' '
+            end
+            return item
+          end,
+        },
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
