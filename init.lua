@@ -546,7 +546,7 @@ require('lazy').setup({
     dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
     opts = {
       menu = {
-        width = vim.api.nvim_win_get_width(0) - 4,
+        width = vim.api.nvim_win_get_width(0) - 2,
       },
       settings = {
         save_on_toggle = true,
@@ -562,7 +562,7 @@ require('lazy').setup({
           desc = 'H[a]rpoon File',
         },
         {
-          '<leader>H',
+          '<leader>h',
           function()
             local harpoon = require 'harpoon'
             harpoon.ui:toggle_quick_menu(harpoon:list())
@@ -762,8 +762,22 @@ require('lazy').setup({
         -- end,
       },
       window = {
-        position = 'left',
-        width = 30,
+        position = 'float',
+        popup = {
+          size = {
+            height = '80%', -- Floating window height (percentage or fixed)
+            width = '25%', -- Floating window width (percentage or fixed)
+          },
+          border = 'rounded', -- Border style for floating window
+          position = {
+            row = 1, -- Align the floating window vertically near the top
+            col = 1000, -- Align it near the left side (close to line numbers)
+          },
+          offset = {
+            row = 0,
+            col = 2, -- Slightly move it away from the very left, next to line numbers
+          },
+        },
         mappings = {
           -- NOTE: REFER TO THIS TWO LINES BELOW FOR IMAGE PREVIEW MAPPINGS
           -- Uncomment one of them to use image preview (or just simply use both, it's up to you)
@@ -840,9 +854,59 @@ require('lazy').setup({
     init = function()
       require('aerial').setup {
         layout = {
-          width = 30,
+          width = 40,
           default_direction = 'right',
           placement = 'edge',
+        },
+        -- Options for opening aerial in a floating win
+        float = {
+          -- Controls border appearance. Passed to nvim_open_win
+          border = 'rounded',
+
+          -- Determines location of floating window
+          --   cursor - Opens float on top of the cursor
+          --   editor - Opens float centered in the editor
+          --   win    - Opens float centered in the window
+          relative = 'editor',
+
+          -- These control the height of the floating window.
+          -- They can be integers or a float between 0 and 1 (e.g. 0.4 for 40%)
+          -- min_height and max_height can be a list of mixed types.
+          -- min_height = {8, 0.1} means "the greater of 8 rows or 10% of total"
+          max_height = 0.9,
+          height = nil,
+          min_height = { 8, 0.1 },
+
+          override = function(conf, source_winid)
+            -- This is the config that will be passed to nvim_open_win.
+            -- Change values here to customize the layout
+            return conf
+          end,
+        },
+        autojump = true,
+        -- Options for the floating nav windows
+        nav = {
+          border = 'rounded',
+          max_height = 0.9,
+          min_height = { 10, 0.1 },
+          max_width = 0.5,
+          min_width = { 0.2, 20 },
+          win_opts = {
+            cursorline = true,
+            winblend = 10,
+          },
+          -- Show a preview of the code in the right column, when there are no child symbols
+          preview = false,
+          -- Keymaps in the nav window
+          keymaps = {
+            ['<CR>'] = 'actions.jump',
+            ['<2-LeftMouse>'] = 'actions.jump',
+            ['<C-v>'] = 'actions.jump_vsplit',
+            ['<C-s>'] = 'actions.jump_split',
+            ['h'] = 'actions.left',
+            ['l'] = 'actions.right',
+            ['<C-c>'] = 'actions.close',
+          },
         },
         -- optionally use on_attach to set keymaps when aerial has attached to a buffer
         on_attach = function(bufnr)
@@ -852,7 +916,7 @@ require('lazy').setup({
         end,
       }
       -- You probably also want to set a keymap to toggle aerial
-      vim.keymap.set('n', '<leader>E', '<cmd>AerialToggle!<CR>', { desc = 'Toggle Aerial [E]xplorer' })
+      vim.keymap.set('n', '<leader>E', '<cmd>AerialToggle float<CR>', { desc = 'Toggle Aerial [E]xplorer' })
     end,
   },
 
@@ -1132,44 +1196,6 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: `flash.nvim` lets you navigate your code with search labels, enhanced character motions, and Treesitter integration.
-  -- Sir Folke made something good other than which-key
-  --
-  -- All hail Neovim!
-  {
-    'folke/flash.nvim',
-    event = 'VeryLazy',
-    opts = {},
-    keys = {
-      -- I only opt for 2 shortcut, this is all I need for my workload
-      -- Feel free to add shortcut yourselves!
-      {
-        's',
-        mode = { 'n', 'x', 'o' },
-        function()
-          require('flash').jump()
-        end,
-        desc = '[S]lash',
-      },
-      {
-        'S',
-        mode = { 'n', 'x', 'o' },
-        function()
-          require('flash').treesitter()
-        end,
-        desc = '[S]lash treesitter',
-      },
-      {
-        '<c-s>',
-        mode = { 'c' },
-        function()
-          require('flash').toggle()
-        end,
-        desc = 'Toggle Flash [S]earch',
-      },
-    },
-  },
-
   -- NOTE: A plugin to show you the keymaps that are available in Neovim.
   --
   -- Greet you with something greater than yourself.
@@ -1205,6 +1231,31 @@ require('lazy').setup({
       vim.keymap.set({ 'n', 'x' }, '<leader>rr', function()
         require('refactoring').select_refactor()
       end, { desc = 'Advanced [R]efactoring' })
+    end,
+  },
+
+  -- NOTE: A Note-taking plugins.
+  -- Replacing default note-taking feature from Telescope.
+  {
+    'nvim-neorg/neorg',
+    build = ':Neorg sync-parsers',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      require('neorg').setup {
+        load = {
+          ['core.defaults'] = {}, -- Loads default behaviour
+          ['core.concealer'] = {}, -- Adds pretty icons to your documents
+          ['core.dirman'] = { -- Manages Neorg workspaces
+            config = {
+              -- Feel free to add workspaces, `notes` are on home directory inside `.notes`.
+              workspaces = {
+                notes = '~/.notes',
+              },
+              default_workspace = 'notes',
+            },
+          },
+        },
+      }
     end,
   },
 
@@ -1346,7 +1397,7 @@ require('lazy').setup({
       keymap.add {
         mode = { 'n', 'v' },
         {
-          '<leader>h',
+          '<leader>H',
           function()
             toggle_telescope(harpoon:list())
           end,
@@ -1379,6 +1430,8 @@ require('lazy').setup({
       -- Kinda useful if you're looking for something like Inkdrop/Notion but don't wanna use 3rd party services.
       -- Recommended to install 'iamcco/markdown-preview.nvim' as well to render Markdown notes.
       -- NOTE: This is for a personal notes directory.
+      -- WARN: Note-taking activities are moved to Neorg, please refer to that plugin using search feature.
+      -- More info on 'nvim-neorg/neorg' repository.
       keymap.add {
         mode = { 'n' },
         {
@@ -1618,6 +1671,11 @@ require('lazy').setup({
         angularls = {},
         volar = {},
         svelte = {},
+        mdx_analyzer = {
+          filetypes = { 'markdown.mdx', 'mdx' },
+        },
+        -- Support for markdown (below) and .mdx (above)
+        marksman = {},
         -- KingTS on top!
         --
         -- Additional necessities for personal development
@@ -1858,6 +1916,25 @@ require('lazy').setup({
           lsp_format = lsp_format_opt,
         }
       end,
+      formatters = {
+        ['markdown-toc'] = {
+          condition = function(_, ctx)
+            for _, line in ipairs(vim.api.nvim_buf_get_lines(ctx.buf, 0, -1, false)) do
+              if line:find '<!%-%- toc %-%->' then
+                return true
+              end
+            end
+          end,
+        },
+        ['markdownlint-cli2'] = {
+          condition = function(_, ctx)
+            local diag = vim.tbl_filter(function(d)
+              return d.source == 'markdownlint'
+            end, vim.diagnostic.get(ctx.buf))
+            return #diag > 0
+          end,
+        },
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
         go = { 'gofumpt', 'goimports', 'gofmt' },
@@ -1866,6 +1943,8 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        ['markdown'] = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
+        ['markdown.mdx'] = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
       },
     },
   },
@@ -2130,6 +2209,11 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  { -- Adding .mdx support to nvim-treesitter
+    'davidmh/mdx.nvim',
+    config = true,
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -2152,6 +2236,7 @@ require('lazy').setup({
         'vim',
         'vimdoc',
         'regex',
+        'norg',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
