@@ -319,7 +319,7 @@ require('lazy').setup({
   -- adds some good ol' code generation and code completion
   {
     'github/copilot.vim',
-    enabled = false,
+    enabled = true,
   },
   {
     'CopilotC-Nvim/CopilotChat.nvim', -- Copilot Chat
