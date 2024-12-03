@@ -508,7 +508,7 @@ require('lazy').setup({
 
   { -- Statusline bottom-side
     -- NOTE: Will use heirline.nvim someday, for now I'll stick with lualine.
-    -- Go check https://github.com/rebelot/heirline.nvim if you wanna hop in first.
+    -- Go check htps://github.com/rebelot/heirline.nvim if you wanna hop in first.
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
@@ -2151,7 +2151,7 @@ require('lazy').setup({
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
       -- vim.cmd.colorscheme 'tokyonight-night'
-      vim.cmd.colorscheme 'catppuccin-frappe'
+      vim.cmd.colorscheme 'catppuccin-macchiato'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
