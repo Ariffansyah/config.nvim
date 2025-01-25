@@ -639,12 +639,41 @@ require('lazy').setup({
         },
         renderer = {
           highlight_opened_files = 'all',
-          highlight_git = true,
+
           root_folder_modifier = ':t',
           indent_markers = {
             enable = true,
           },
           full_name = true,
+        },
+      }
+    end,
+  },
+
+  {
+    'echasnovski/mini.move',
+    version = false, -- Always install the latest version
+    config = function()
+      require('mini.move').setup {
+        -- Optional configuration
+        mappings = {
+          -- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
+          left = '<M-h>',
+          right = '<M-l>',
+          down = '<M-j>',
+          up = '<M-k>',
+
+          -- Move current line in Normal mode
+          line_left = '<M-h>',
+          line_right = '<M-l>',
+          line_down = '<M-j>',
+          line_up = '<M-k>',
+        },
+
+        -- Options which control moving behavior
+        options = {
+          -- Automatically reindent selection during linewise vertical move
+          reindent_linewise = true,
         },
       }
     end,
@@ -659,7 +688,7 @@ require('lazy').setup({
   -- UPDATE: image.nvim is stable and will be used from now on!
   -- Feel free to fallback to image_preview.nvim if your platform is incompatible with image.nvim
   -- {
-  --   'adelarsq/image_preview.nvim',
+  --   'adelarsq/ilazy = true,mage_preview.nvim',
   --   event = 'VeryLazy',
   --   config = function()
   --     require('image_preview').setup()
@@ -674,6 +703,7 @@ require('lazy').setup({
   -- And since MacOS/Arch Linux's default Luarock version is 5.4 and magick doesn't support >5.1, we'll use magick.nvim as a workaround.
   {
     '3rd/image.nvim',
+    build = false,
     event = 'VeryLazy',
     dependencies = {
       'kiyoon/magick.nvim',
