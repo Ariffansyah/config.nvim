@@ -345,6 +345,35 @@ require('lazy').setup({
     },
   },
 
+  {
+    'neoclide/coc.nvim',
+    branch = 'release',
+    config = function()
+      -- Configure Java error highlighting
+      vim.cmd [[
+      highlight CocErrorHighlight ctermfg=Red guifg=#ff0000
+      highlight CocWarningHighlight ctermfg=Yellow guifg=#ffff00
+    ]]
+
+      -- Set diagnostic signs
+      vim.g.coc_config = {
+        diagnostic = {
+          errorSign = '>>',
+          warningSign = '⚠',
+          infoSign = 'i',
+          hintSign = '?',
+        },
+      }
+
+      -- Add key mappings for coc.nvim
+      vim.api.nvim_set_keymap('n', '<leader>cd', '<Cmd>CocDiagnostics<CR>', { noremap = true, silent = true })
+      vim.api.nvim_set_keymap('n', 'gd', '<Plug>(coc-definition)', { silent = true })
+      vim.api.nvim_set_keymap('n', 'gy', '<Plug>(coc-type-definition)', { silent = true })
+      vim.api.nvim_set_keymap('n', 'gi', '<Plug>(coc-implementation)', { silent = true })
+      vim.api.nvim_set_keymap('n', 'gr', '<Plug>(coc-references)', { silent = true })
+    end,
+  },
+
   -- NOTE: A plugin to generate beautiful images of your code.
   --
   -- REMEMBER: The true Text Editor is Vim/Neovim!
