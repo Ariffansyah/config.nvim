@@ -38,6 +38,7 @@ return {
         "vue-language-server",
         "yaml-language-server",
         "tofu-ls",
+        "bibtex-tidy",
       },
     },
   },

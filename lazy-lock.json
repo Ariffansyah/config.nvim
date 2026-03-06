@@ -65,7 +65,7 @@
   "vim-dotenv": { "branch": "master", "commit": "5c51cfcf8d87280d6414e03cd6b253eb70ecb800" },
   "vim-hexokinase": { "branch": "master", "commit": "62324b43ea858e268fb70665f7d012ae67690f43" },
   "vim-tmux-navigator": { "branch": "master", "commit": "e41c431a0c7b7388ae7ba341f01a0d217eb3a432" },
+  "vimtex": { "branch": "master", "commit": "82d2305ff71dfb3bd91602534cc9bb9a195bcb38" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" },
-  "workspace-diagnostics.nvim": { "branch": "main", "commit": "60f9175b2501ae3f8b1aba9719c0df8827610c8e" },
   "yanky.nvim": { "branch": "main", "commit": "9d3caea67cf183639d4e510d34f2d58b6109abdd" }
 }
