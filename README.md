@@ -1,4 +1,4 @@
-# employee.nvim
+# config.nvim
 
 A LazyVim-based Neovim configuration optimized for modern web development and general programming.
 
