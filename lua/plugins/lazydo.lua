@@ -46,7 +46,7 @@ return {
         startup_detect = false,
         silent = true,
         global_path = vim.fn.expand("~") .. "/Documents/lazydo/tasks.json",
-        auto_backup = true,
+        auto_backup = false,
         backup_count = 5,
         compression = false,
         readable = true,
