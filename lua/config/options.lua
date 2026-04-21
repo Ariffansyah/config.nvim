@@ -167,10 +167,7 @@ end, { desc = "Toggle virtual text" })
 -- Ensure LSP attaches to C++ files
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "c", "cpp", "cc", "cxx", "h", "hpp", "hxx" },
-  callback = function()
-    -- Force clangd to attach
-    vim.cmd("LspStart clangd")
-  end,
+  callback = function() end,
 })
 
 -- ========================================
