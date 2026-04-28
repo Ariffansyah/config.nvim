@@ -2,18 +2,10 @@ return {
   {
     "Dan7h3x/LazyDo",
     branch = "main",
-    cmd = { "LazyDoToggle", "LazyDoPin", "LazyDoToggleStorage" },
+    cmd = { "LazyDoToggle", "LazyDoPin" },
     keys = {
       {
-        "<leader>ok",
-        function()
-          require("lazydo").toggle("kanban")
-        end,
-        mode = { "n" },
-        desc = "LazyDo Kanban",
-      },
-      {
-        "<leader>ol",
+        "<F2>",
         function()
           require("lazydo").toggle("list")
         end,
@@ -21,7 +13,6 @@ return {
         desc = "LazyDo List",
       },
       { "<leader>op", "<cmd>LazyDoPin<cr>", mode = { "n" }, desc = "LazyDo Pin" },
-      { "<leader>os", "<cmd>LazyDoToggleStorage<cr>", mode = { "n" }, desc = "LazyDo Storage" },
     },
     event = "VeryLazy",
     opts = {
@@ -41,7 +32,7 @@ return {
         project = { enabled = false, auto_detect = false, use_git_root = true },
         startup_detect = false,
         silent = true,
-        global_path = nil,
+        global_path = vim.fn.expand("~/.config/nvim/.lazydo/tasks.json"),
         auto_backup = true,
         backup_count = 3,
         compression = true,
