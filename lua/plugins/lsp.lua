@@ -30,6 +30,8 @@ return {
           "json",
           "yaml",
           "toml",
+          -- Java
+          "java",
           -- Others
           "lua",
           "markdown",
@@ -431,6 +433,74 @@ return {
           enable_import_completion = true,
         },
 
+        -- ==========================================
+        -- Java / Spring Boot
+        -- ==========================================
+
+        -- Eclipse JDT Language Server
+        -- Handles Java editing, refactoring, navigation, and Spring Boot support
+        jdtls = {
+          settings = {
+            java = {
+              configuration = {
+                -- jdtls will auto-detect Java runtimes if JAVA_HOME is set
+                runtimes = {},
+              },
+              eclipse = {
+                downloadSources = true,
+              },
+              maven = {
+                downloadSources = true,
+              },
+              implementationsCodeLens = {
+                enabled = true,
+              },
+              referencesCodeLens = {
+                enabled = true,
+              },
+              references = {
+                includeDecompiledSources = true,
+              },
+              inlayHints = {
+                parameterNames = {
+                  enabled = "all",
+                },
+              },
+              format = {
+                enabled = true,
+              },
+              completion = {
+                favoriteStaticMembers = {
+                  "org.assertj.core.api.Assertions.*",
+                  "org.mockito.Mockito.*",
+                  "org.mockito.ArgumentMatchers.*",
+                  "org.springframework.boot.test.context.SpringBootTest",
+                },
+                importOrder = {
+                  "java",
+                  "javax",
+                  "jakarta",
+                  "com",
+                  "org",
+                  "io",
+                  "net",
+                  "",
+                  "\\#",
+                },
+              },
+              sources = {
+                organizeImports = {
+                  starThreshold = 3,
+                  staticStarThreshold = 3,
+                },
+              },
+            },
+          },
+          init_options = {
+            bundles = {},
+          },
+        },
+
         -- Lua
         lua_ls = {
           settings = {
@@ -531,6 +601,8 @@ return {
         lua = { "stylua" },
         -- Python
         python = { "isort", "black" },
+        -- Java
+        java = { "google-java-format" },
         -- TOML
         toml = { "taplo" },
       },

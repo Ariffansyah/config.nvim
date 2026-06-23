@@ -14,6 +14,9 @@ return {
         -- Python
         python = { "black", "isort" },
 
+        -- Java
+        java = { "google-java-format" },
+
         -- Other languages
         lua = { "stylua" },
         rust = { "rustfmt" },

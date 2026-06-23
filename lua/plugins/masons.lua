@@ -39,6 +39,8 @@ return {
         "yaml-language-server",
         "tofu-ls",
         "bibtex-tidy",
+        "jdtls",
+        "google-java-format",
       },
     },
   },
