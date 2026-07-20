@@ -87,10 +87,29 @@ return {
         },
         vtsls = {
           settings = {
+            vtsls = {
+              autoUseWorkspaceTsdk = true,
+              enableMoveToFileCodeAction = true,
+              experimental = {
+                maxInlayHintLength = 30,
+                completion = {
+                  enableServerSideFuzzyMatch = true,
+                },
+              },
+            },
             typescript = {
+              suggest = {
+                autoImports = true,
+                includeCompletionsForImportStatements = true,
+                completeFunctionCalls = true,
+                includeAutomaticOptionalChainCompletions = true,
+                paths = true,
+              },
               preferences = {
                 importModuleSpecifier = "relative",
+                includePackageJsonAutoImports = "on",
               },
+              updateImportsOnFileMove = { enabled = "always" },
               inlayHints = {
                 parameterNames = { enabled = "literals" },
                 parameterTypes = { enabled = true },
@@ -101,6 +120,18 @@ return {
               },
             },
             javascript = {
+              suggest = {
+                autoImports = true,
+                includeCompletionsForImportStatements = true,
+                completeFunctionCalls = true,
+                includeAutomaticOptionalChainCompletions = true,
+                paths = true,
+              },
+              preferences = {
+                importModuleSpecifier = "relative",
+                includePackageJsonAutoImports = "on",
+              },
+              updateImportsOnFileMove = { enabled = "always" },
               inlayHints = {
                 parameterNames = { enabled = "literals" },
                 parameterTypes = { enabled = true },
