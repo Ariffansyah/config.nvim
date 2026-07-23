@@ -45,6 +45,18 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = {
+      -- Force-enable every configured server ourselves instead of relying on
+      -- mason-lspconfig's `automatic_enable`, which can race the mason registry
+      -- and leave *no* server enabled (vim.lsp._enabled_configs stays empty).
+      -- Returning true makes LazyVim skip its own enable/auto-enable for the
+      -- server, so this hook has sole ownership and nothing double-handles it.
+      setup = {
+        ["*"] = function(server, server_opts)
+          vim.lsp.config(server, server_opts)
+          vim.lsp.enable(server)
+          return true
+        end,
+      },
       servers = {
         -- ==========================================
         -- JavaScript/TypeScript Frameworks
