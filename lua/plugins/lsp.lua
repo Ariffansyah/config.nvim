@@ -611,44 +611,4 @@ return {
     end,
   },
 
-  -- Ensure formatters are configured
-  {
-    "stevearc/conform.nvim",
-    opts = {
-      formatters_by_ft = {
-        -- JavaScript/TypeScript
-        javascript = { "prettierd", "prettier" },
-        typescript = { "prettierd", "prettier" },
-        javascriptreact = { "prettierd", "prettier" },
-        typescriptreact = { "prettierd", "prettier" },
-        svelte = { "prettierd", "prettier" },
-        vue = { "prettierd", "prettier" },
-        astro = { "prettierd", "prettier" },
-        -- Web
-        html = { "prettierd", "prettier" },
-        css = { "prettierd", "prettier" },
-        scss = { "prettierd", "prettier" },
-        json = { "prettierd", "prettier" },
-        jsonc = { "prettierd", "prettier" },
-        yaml = { "prettierd", "prettier" },
-        markdown = { "prettierd", "prettier" },
-        -- PHP/Laravel
-        php = { "php_cs_fixer", "pint" },
-        blade = { "blade-formatter" },
-        -- Systems
-        rust = { "rustfmt" },
-        go = { "gofumpt", "goimports" },
-        c = { "clang_format" },
-        cpp = { "clang_format" },
-        -- Lua
-        lua = { "stylua" },
-        -- Python
-        python = { "isort", "black" },
-        -- Java
-        java = { "google-java-format" },
-        -- TOML
-        toml = { "taplo" },
-      },
-    },
-  },
-}
+  }

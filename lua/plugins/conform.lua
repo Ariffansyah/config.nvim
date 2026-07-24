@@ -17,10 +17,10 @@ return {
         -- Java
         java = { "google-java-format" },
 
+        go = { "gofmt" },
         -- Other languages
         lua = { "stylua" },
         rust = { "rustfmt" },
-        go = { "gofmt" },
         sh = { "shfmt" },
       },
     },
