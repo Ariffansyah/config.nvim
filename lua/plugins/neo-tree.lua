@@ -20,6 +20,7 @@ return {
       name = {
         trailing_slash = false,
         use_git_status_colors = true,
+        use_filtered_colors = true,
         highlight = "NeoTreeFileName",
       },
       git_status = {
@@ -38,10 +39,15 @@ return {
       },
     },
     filesystem = {
+      filtered_items = {
+        visible = true,
+        hide_dotfiles = true,
+        hide_gitignored = true,
+      },
       renderers = {
         file = {
           { "icon" },
-          { "name", use_git_status_colors = true },
+          { "name", use_git_status_colors = true, use_filtered_colors = true },
           { "git_status" },
           { "file_size" },
         },
@@ -54,6 +60,25 @@ return {
           require("neo-tree.command").execute({ action = "close" })
         end,
       },
+      {
+        event = "state_created",
+        handler = function(state)
+          if state.name ~= "filesystem" then
+            return
+          end
+          local git_status = state.components.git_status
+          state.components.git_status = function(config, node, s)
+            if node.filtered_by then
+              return {}
+            end
+            return git_status(config, node, s)
+          end
+        end,
+      },
     },
   },
+  config = function(_, opts)
+    require("neo-tree").setup(opts)
+    vim.api.nvim_set_hl(0, "NeoTreeDotfile", { link = "Comment" })
+  end,
 }
