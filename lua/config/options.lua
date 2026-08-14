@@ -5,6 +5,7 @@
 -- ========================================
 -- EDITOR SETTINGS
 -- ========================================
+vim.g.maplocalleader = " "
 vim.opt.relativenumber = false
 vim.opt.number = true
 vim.opt.numberwidth = 4
