@@ -90,7 +90,6 @@ return {
     -- Ctrl+C and Ctrl+V for system clipboard
     { "<C-c>", '"+y', mode = { "v", "x" }, desc = "Copy to System Clipboard" },
     { "<C-c>", '"+yy', mode = { "n" }, desc = "Copy Line to System Clipboard" },
-    { "<C-v>", '"+p', mode = { "n" }, desc = "Paste from System Clipboard" },
     { "<C-v>", "<C-r>+", mode = { "i" }, desc = "Paste from System Clipboard (Insert)" },
   },
 }

@@ -45,53 +45,13 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = {
-      -- Force-enable every configured server ourselves instead of relying on
-      -- mason-lspconfig's `automatic_enable`, which can race the mason registry
-      -- and leave *no* server enabled (vim.lsp._enabled_configs stays empty).
-      -- Returning true makes LazyVim skip its own enable/auto-enable for the
-      -- server, so this hook has sole ownership and nothing double-handles it.
-      setup = {
-        ["*"] = function(server, server_opts)
-          vim.lsp.config(server, server_opts)
-          vim.lsp.enable(server)
-          return true
-        end,
-      },
       servers = {
         -- ==========================================
         -- JavaScript/TypeScript Frameworks
         -- ==========================================
 
-        -- Svelte
-        svelte = {
-          keys = {
-            {
-              "<leader>co",
-              LazyVim.lsp.action["source.organizeImports"],
-              desc = "Organize Imports",
-            },
-          },
-          capabilities = {
-            workspace = {
-              didChangeWatchedFiles = vim.fn.has("nvim-0.10") == 0 and { dynamicRegistration = true },
-            },
-          },
-        },
-
-        -- Vue
-        volar = {
-          init_options = {
-            vue = {
-              hybridMode = false,
-            },
-          },
-        },
-
-        -- Astro
-        astro = {},
-
         -- Angular
-        angularls = {},
+        angularls = { workspace_required = true },
 
         -- TypeScript/JavaScript
         ts_ls = {
@@ -99,59 +59,9 @@ return {
         },
         vtsls = {
           settings = {
-            vtsls = {
-              autoUseWorkspaceTsdk = true,
-              enableMoveToFileCodeAction = true,
-              experimental = {
-                maxInlayHintLength = 30,
-                completion = {
-                  enableServerSideFuzzyMatch = true,
-                },
-              },
-            },
             typescript = {
-              suggest = {
-                autoImports = true,
-                includeCompletionsForImportStatements = true,
-                completeFunctionCalls = true,
-                includeAutomaticOptionalChainCompletions = true,
-                paths = true,
-              },
-              preferences = {
-                importModuleSpecifier = "relative",
-                includePackageJsonAutoImports = "on",
-              },
-              updateImportsOnFileMove = { enabled = "always" },
-              inlayHints = {
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = true },
-                variableTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                enumMemberValues = { enabled = true },
-              },
-            },
-            javascript = {
-              suggest = {
-                autoImports = true,
-                includeCompletionsForImportStatements = true,
-                completeFunctionCalls = true,
-                includeAutomaticOptionalChainCompletions = true,
-                paths = true,
-              },
-              preferences = {
-                importModuleSpecifier = "relative",
-                includePackageJsonAutoImports = "on",
-              },
-              updateImportsOnFileMove = { enabled = "always" },
-              inlayHints = {
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = true },
-                variableTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                enumMemberValues = { enabled = true },
-              },
+              preferences = { importModuleSpecifier = "relative", includePackageJsonAutoImports = "on" },
+              inlayHints = { variableTypes = { enabled = true } },
             },
           },
         },
@@ -275,123 +185,9 @@ return {
         -- Systems Programming
         -- ==========================================
 
-        -- Rust
-        rust_analyzer = {
-          settings = {
-            ["rust-analyzer"] = {
-              cargo = {
-                allFeatures = true,
-                loadOutDirsFromCheck = true,
-                buildScripts = {
-                  enable = true,
-                },
-              },
-              checkOnSave = {
-                command = "clippy",
-                allFeatures = true,
-              },
-              procMacro = {
-                enable = true,
-                ignored = {
-                  ["async-trait"] = { "async_trait" },
-                  ["napi-derive"] = { "napi" },
-                  ["async-recursion"] = { "async_recursion" },
-                },
-              },
-              inlayHints = {
-                lifetimeElisionHints = {
-                  enable = "always",
-                },
-              },
-            },
-          },
-        },
-
-        -- Go
+        -- Go (rest comes from the go extra)
         gopls = {
-          settings = {
-            gopls = {
-              gofumpt = true,
-              codelenses = {
-                gc_details = false,
-                generate = true,
-                regenerate_cgo = true,
-                run_govulncheck = true,
-                test = true,
-                tidy = true,
-                upgrade_dependency = true,
-                vendor = true,
-              },
-              hints = {
-                assignVariableTypes = true,
-                compositeLiteralFields = true,
-                compositeLiteralTypes = true,
-                constantValues = true,
-                functionTypeParameters = true,
-                parameterNames = true,
-                rangeVariableTypes = true,
-              },
-              analyses = {
-                fieldalignment = true,
-                nilness = true,
-                unusedparams = true,
-                unusedwrite = true,
-                useany = true,
-                shadow = true,
-              },
-              usePlaceholders = true,
-              completeUnimported = true,
-              staticcheck = true,
-              directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
-              semanticTokens = true,
-            },
-          },
-        },
-
-        -- C/C++
-        clangd = {
-          keys = {
-            { "<leader>cR", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
-          },
-          root_dir = function(fname)
-            local util = require("lspconfig.util")
-            local root = util.root_pattern(
-              "Makefile",
-              "configure.ac",
-              "configure.in",
-              "config.h.in",
-              "meson.build",
-              "meson_options.txt",
-              "build.ninja",
-              "compile_commands.json",
-              "compile_flags.txt",
-              ".git"
-            )(fname)
-
-            if root then
-              return root
-            end
-
-            -- Fallback to current file directory
-            return vim.fn.fnamemodify(fname, ":p:h")
-          end,
-          capabilities = {
-            offsetEncoding = { "utf-16" },
-          },
-          cmd = {
-            "clangd",
-            "--background-index",
-            "--clang-tidy",
-            "--header-insertion=iwyu",
-            "--completion-style=detailed",
-            "--function-arg-placeholders",
-            "--fallback-style=llvm",
-          },
-          init_options = {
-            usePlaceholders = true,
-            completeUnimported = true,
-            clangdFileStatus = true,
-          },
+          settings = { gopls = { analyses = { shadow = true } } },
         },
 
         -- ==========================================
@@ -399,11 +195,7 @@ return {
         -- ==========================================
 
         -- Tailwind CSS
-        tailwindcss = {
-          root_dir = function(...)
-            return require("lspconfig.util").root_pattern(".git")(...)
-          end,
-        },
+        tailwindcss = {},
 
         -- HTML
         html = {
@@ -412,38 +204,6 @@ return {
 
         -- CSS
         cssls = {},
-
-        -- JSON (simple)
-        jsonls = {
-          settings = {
-            json = {
-              format = { enable = true },
-              validate = { enable = true },
-            },
-          },
-        },
-
-        -- YAML (simple)
-        yamlls = {
-          settings = {
-            yaml = {
-              keyOrdering = false,
-              format = { enable = true },
-              validate = true,
-              schemaStore = {
-                enable = true, -- Use yamlls built-in schema store
-              },
-            },
-          },
-        },
-
-        -- ==========================================
-        -- DevOps & Containers
-        -- ==========================================
-
-        -- Docker
-        dockerls = {},
-        docker_compose_language_service = {},
 
         -- ==========================================
         -- Other Languages
@@ -476,118 +236,84 @@ return {
           enable_import_completion = true,
         },
 
-        -- ==========================================
-        -- Java / Spring Boot
-        -- ==========================================
-
-        -- Eclipse JDT Language Server
-        -- Handles Java editing, refactoring, navigation, and Spring Boot support
-        jdtls = {
-          settings = {
-            java = {
-              configuration = {
-                -- jdtls will auto-detect Java runtimes if JAVA_HOME is set
-                runtimes = {},
-              },
-              eclipse = {
-                downloadSources = true,
-              },
-              maven = {
-                downloadSources = true,
-              },
-              implementationsCodeLens = {
-                enabled = true,
-              },
-              referencesCodeLens = {
-                enabled = true,
-              },
-              references = {
-                includeDecompiledSources = true,
-              },
-              inlayHints = {
-                parameterNames = {
-                  enabled = "all",
-                },
-              },
-              format = {
-                enabled = true,
-              },
-              completion = {
-                favoriteStaticMembers = {
-                  "org.assertj.core.api.Assertions.*",
-                  "org.mockito.Mockito.*",
-                  "org.mockito.ArgumentMatchers.*",
-                  "org.springframework.boot.test.context.SpringBootTest",
-                },
-                importOrder = {
-                  "java",
-                  "javax",
-                  "jakarta",
-                  "com",
-                  "org",
-                  "io",
-                  "net",
-                  "",
-                  "\\#",
-                },
-              },
-              sources = {
-                organizeImports = {
-                  starThreshold = 3,
-                  staticStarThreshold = 3,
-                },
-              },
-            },
-          },
-          init_options = {
-            bundles = {},
-          },
-        },
-
-        -- Lua
-        lua_ls = {
-          settings = {
-            Lua = {
-              workspace = {
-                checkThirdParty = false,
-              },
-              codeLens = {
-                enable = true,
-              },
-              completion = {
-                callSnippet = "Replace",
-              },
-              diagnostics = {
-                globals = { "vim" },
-              },
-              doc = {
-                privateName = { "^_" },
-              },
-              hint = {
-                enable = true,
-                setType = false,
-                paramType = true,
-                paramName = "Disable",
-                semicolon = "Disable",
-                arrayIndex = "Disable",
-              },
-            },
-          },
-        },
-
         -- Markdown
         marksman = {},
-
-        -- TOML
-        taplo = {},
       },
     },
   },
 
-  -- Add schemas for JSON/YAML
+  -- Rust: keep clippy + lifetime hints on top of the rust extra
   {
-    "b0o/schemastore.nvim",
-    lazy = true,
+    "mrcjkb/rustaceanvim",
+    opts = {
+      server = {
+        default_settings = {
+          ["rust-analyzer"] = {
+            check = { command = "clippy" },
+            inlayHints = { lifetimeElisionHints = { enable = "always" } },
+          },
+        },
+      },
+    },
+  },
+
+  -- Java / Spring Boot (nvim-jdtls comes from the java extra)
+  {
+    "mfussenegger/nvim-jdtls",
+    opts = {
+      settings = {
+        java = {
+          eclipse = {
+            downloadSources = true,
+          },
+          maven = {
+            downloadSources = true,
+          },
+          implementationsCodeLens = {
+            enabled = true,
+          },
+          referencesCodeLens = {
+            enabled = true,
+          },
+          references = {
+            includeDecompiledSources = true,
+          },
+          inlayHints = {
+            parameterNames = {
+              enabled = "all",
+            },
+          },
+          format = {
+            enabled = true,
+          },
+          completion = {
+            favoriteStaticMembers = {
+              "org.assertj.core.api.Assertions.*",
+              "org.mockito.Mockito.*",
+              "org.mockito.ArgumentMatchers.*",
+              "org.springframework.boot.test.context.SpringBootTest",
+            },
+            importOrder = {
+              "java",
+              "javax",
+              "jakarta",
+              "com",
+              "org",
+              "io",
+              "net",
+              "",
+              "\\#",
+            },
+          },
+          sources = {
+            organizeImports = {
+              starThreshold = 3,
+              staticStarThreshold = 3,
+            },
+          },
+        },
+      },
+    },
   },
 
   -- Laravel Blade support
@@ -610,5 +336,4 @@ return {
       require("telescope").load_extension("laravel")
     end,
   },
-
-  }
+}

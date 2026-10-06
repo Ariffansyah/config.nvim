@@ -15,7 +15,8 @@ return {
         border = "rounded",
         -- Position it just above the statusline
         row = vim.o.lines - 3,
-        col = vim.o.columns - 2,
+        -- Stay left of the claudecode.nvim panel (right split, 30% width)
+        col = math.floor(vim.o.columns * 0.7) - 2,
       },
       show_leader = true,
       clear_after = 3,

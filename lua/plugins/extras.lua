@@ -21,68 +21,6 @@ return {
     end,
   },
 
-  -- LSP Lines
-  {
-    "Maan2003/lsp_lines.nvim",
-    event = "LspAttach",
-    config = function()
-      require("lsp_lines").setup()
-
-      -- Configure diagnostics with more detail
-      vim.diagnostic.config({
-        virtual_text = false,
-        virtual_lines = {
-          only_current_line = true, -- Change this to true to avoid out of range errors
-          highlight_whole_line = false, -- Change this to false
-        },
-        signs = true,
-        underline = true,
-        update_in_insert = false,
-        severity_sort = true,
-      })
-    end,
-    keys = {
-      {
-        "<leader>l",
-        function()
-          require("lsp_lines").toggle()
-        end,
-        desc = "Toggle LSP Lines",
-      },
-      {
-        "<leader>de",
-        function()
-          vim.diagnostic.open_float(nil, {
-            scope = "cursor",
-            border = "rounded",
-            source = "always",
-          })
-        end,
-        desc = "Show diagnostic details",
-      },
-    },
-  },
-
-  -- Mini.move
-  {
-    "nvim-mini/mini.move",
-    event = "VeryLazy",
-    config = function()
-      require("mini.move").setup({
-        mappings = {
-          left = "<M-h>",
-          right = "<M-l>",
-          down = "<M-j>",
-          up = "<M-k>",
-          line_left = "<M-h>",
-          line_right = "<M-l>",
-          line_down = "<M-j>",
-          line_up = "<M-k>",
-        },
-      })
-    end,
-  },
-
   -- Highlight Undo
   {
     "tzachar/highlight-undo.nvim",
@@ -152,13 +90,6 @@ return {
   {
     "andweeb/presence.nvim",
     event = "VeryLazy",
-  },
-
-  -- Vim Hexokinase (Color Preview)
-  {
-    "rrethy/vim-hexokinase",
-    build = "make hexokinase",
-    event = "BufReadPre",
   },
 
   -- Tmux Navigator

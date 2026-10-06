@@ -17,13 +17,19 @@ This is my personal Neovim setup built on top of LazyVim. It's configured for fu
 **Editor Features**
 
 - Advanced syntax highlighting via Treesitter
-- Smart autocompletion with nvim-cmp
+- Smart autocompletion with blink.cmp
 - Fuzzy finding for files and text
 - Tree-based file explorer
 - Code snippets support
 - Multiple cursors and visual enhancements
 - Text object manipulation with mini.nvim
 - Enhanced text objects with mini.ai
+
+**AI**
+
+- Claude Code inside Neovim ([claudecode.nvim](https://github.com/coder/claudecode.nvim)): send selections and files, review Claude's diffs in place
+- Inline AI completion with GitHub Copilot, via Neovim's native LSP inline completion (LazyVim `ai.copilot-native` extra)
+- [NeoCodeium](https://github.com/monkoose/neocodeium) (free Windsurf/Codeium) kept as a disabled fallback: set `enabled = true` in `lua/plugins/neocodeium.lua` and remove the Copilot extra to switch
 
 **Code Quality Tools**
 
@@ -43,13 +49,14 @@ This is my personal Neovim setup built on top of LazyVim. It's configured for fu
 
 **Language Support**
 
-- JavaScript/TypeScript (with JSX/TSX)
-- HTML/CSS/SCSS
-- Lua
-- Python
-- Rust
-- Go
-- JSON/YAML
+Configured through LazyVim language extras (`lazyvim.json`) plus `lua/plugins/lsp.lua`:
+
+- JavaScript/TypeScript (vtsls), Vue, Svelte, Astro, Angular
+- HTML/CSS/SCSS, Tailwind CSS
+- PHP / Laravel (Intelephense, Blade)
+- Go, Rust (rustaceanvim), C/C++ (clangd), Java (nvim-jdtls)
+- Python (Pyright), Lua
+- JSON/YAML (with SchemaStore), TOML, Docker
 - Markdown with live preview
 - And more through LSP
 
@@ -66,6 +73,11 @@ For macOS:
 ```bash
 brew install ripgrep fd
 ```
+
+Optional, for the AI features:
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI (`claude`) on your `PATH`
+- A GitHub Copilot subscription. Run `:LspCopilotSignIn` once inside Neovim if you aren't signed in yet.
 
 ## Installation
 
@@ -93,6 +105,23 @@ On first launch, LazyVim will automatically install all plugins. This might take
 ## Keybindings
 
 The leader key is set to Space.
+
+Press `<leader>k` for a cheatsheet of the most-used shortcuts, or `<leader>sk` to search every keymap.
+
+### AI
+
+| Key                        | Action                                        |
+| -------------------------- | --------------------------------------------- |
+| `<leader>Cc`               | Toggle Claude Code                            |
+| `<leader>Cf`               | Focus Claude Code                             |
+| `<leader>Cr`               | Resume a Claude session                       |
+| `<leader>CC`               | Continue the last Claude session              |
+| `<leader>Cb`               | Add current buffer to Claude                  |
+| `<leader>Cs`               | Send selection (visual) / add file (neo-tree) |
+| `<leader>Ca`               | Accept Claude's diff                          |
+| `<leader>Cd`               | Deny Claude's diff                            |
+| `<Tab>` / `<C-j>` (insert) | Accept Copilot suggestion                     |
+| `<M-]>` / `<M-[>` (insert) | Next / previous Copilot suggestion            |
 
 ### General
 
@@ -313,11 +342,12 @@ Automatically adds closing brackets and quotes as you type:
 
 ### Terminal
 
-| Key          | Action                        |
-| ------------ | ----------------------------- |
-| `<C-/>`      | Toggle floating terminal      |
-| `<leader>ft` | Open terminal in split        |
-| `<C-\>`      | Toggle terminal (insert mode) |
+| Key          | Action                            |
+| ------------ | --------------------------------- |
+| `<C-/>`      | Toggle terminal (project root)    |
+| `<leader>ft` | Terminal in project root          |
+| `<leader>fT` | Terminal in current directory     |
+| `<Esc><Esc>` | Leave terminal mode (normal mode) |
 
 ### Debugging
 
@@ -420,9 +450,7 @@ This opens the Mason UI where you can install LSP servers, formatters, and linte
 
 **View all keybindings:**
 
-```
-:Telescope keymaps
-```
+Press `<leader>k` for the cheatsheet, or `<leader>sk` to search every keymap.
 
 ## Troubleshooting
 

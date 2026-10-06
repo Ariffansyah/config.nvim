@@ -4,18 +4,61 @@
 vim.keymap.set("i", "<C-H>", "<C-W>", { desc = "Delete previous word in insert mode" })
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete previous word in insert mode" })
 
--- COPILOT KEYMAP
-vim.api.nvim_set_keymap("i", "<C-j>", 'copilot#Accept("<CR>")', { expr = true, silent = true, noremap = true })
+-- Accept Copilot suggestion (Tab also works, via blink)
+vim.keymap.set("i", "<C-j>", function()
+  vim.lsp.inline_completion.get()
+end, { desc = "Accept Copilot suggestion" })
 
 -- Show notification history
 vim.keymap.set("n", "<leader>nh", "<cmd>Noice history<cr>", { desc = "Show notification history" })
-
-vim.keymap.set("n", "<leader>mp", function()
-  require("conform").format({ async = true, lsp_format = "fallback" })
-end, { noremap = true, silent = true, desc = "Format buffer" })
 
 vim.keymap.set("n", "<leader>fp", function()
   Snacks.picker.projects()
 end, { desc = "Projects" })
 
 vim.keymap.set("n", "ga", vim.lsp.buf.code_action, { desc = "LSP code action" })
+
+-- Cheatsheet of the shortcuts worth remembering (full list: <leader>sk)
+vim.keymap.set("n", "<leader>k", function()
+  Snacks.win({
+    title = " Shortcuts ",
+    border = "rounded",
+    width = 60,
+    height = 32,
+    bo = { filetype = "markdown", modifiable = false },
+    wo = { conceallevel = 2 },
+    keys = { q = "close", ["<esc>"] = "close" },
+    text = {
+      "## Claude",
+      "  <leader>Cc     toggle Claude",
+      "  <leader>Cf     focus Claude",
+      "  <leader>Cs     send selection (visual) / add file (neo-tree)",
+      "  <leader>Cb     add current buffer",
+      "  <leader>Ca/Cd  accept / deny diff",
+      "",
+      "## Terminal",
+      "  Ctrl+/         toggle terminal",
+      "  Esc Esc        terminal -> normal mode",
+      "",
+      "## Editing",
+      "  gcc            comment line",
+      "  gc (visual)    comment selection",
+      "  Alt+j/k        move line / selection",
+      "  gsa / gsd      add / delete surrounding",
+      "  <leader>cf     format buffer",
+      "",
+      "## Code",
+      "  gd / K         definition / hover",
+      "  ga             code action",
+      "  <leader>cr     rename",
+      "  <leader>xx     diagnostics list",
+      "",
+      "## Files",
+      "  <leader>e      file explorer",
+      "  <leader>space  find files",
+      "  <leader>/      grep",
+      "  <leader>a      harpoon add   Ctrl+e  harpoon menu",
+      "  <leader>gg     lazygit",
+    },
+  })
+end, { desc = "Shortcuts cheatsheet" })

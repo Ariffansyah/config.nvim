@@ -128,14 +128,6 @@ end
 -- DIAGNOSTIC KEYMAPS
 -- ========================================
 
--- Show full error message in floating window
-vim.keymap.set("n", "<leader>e", function()
-  vim.diagnostic.open_float(nil, {
-    border = "rounded",
-    source = "always",
-  })
-end, { desc = "Show error details" })
-
 -- Show detailed error at cursor
 vim.keymap.set("n", "<leader>de", function()
   vim.diagnostic.open_float(nil, {
