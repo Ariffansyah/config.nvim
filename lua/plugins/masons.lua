@@ -26,6 +26,8 @@ return {
         "php-cs-fixer",
         "prettierd",
         "pyright",
+        "ruff",
+        "debugpy",
         "rust-analyzer",
         "shfmt",
         "stylua",

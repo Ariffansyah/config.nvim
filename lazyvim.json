@@ -20,7 +20,10 @@
     "lazyvim.plugins.extras.editor.harpoon2",
     "lazyvim.plugins.extras.editor.mini-move",
     "lazyvim.plugins.extras.ui.mini-indentscope",
-    "lazyvim.plugins.extras.util.mini-hipatterns"
+    "lazyvim.plugins.extras.util.mini-hipatterns",
+    "lazyvim.plugins.extras.dap.core",
+    "lazyvim.plugins.extras.test.core",
+    "lazyvim.plugins.extras.lang.python"
   ],
   "install_version": 8,
   "news": {
