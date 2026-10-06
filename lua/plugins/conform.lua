@@ -2,6 +2,8 @@ return {
   {
     "stevearc/conform.nvim",
     opts = {
+      -- without this, globally-installed biome wins over prettier in every project
+      formatters = { biome = { require_cwd = true } },
       formatters_by_ft = {
         -- JavaScript/TypeScript - prioritize local biome/prettier
         javascript = { "biome", "prettier", "prettierd", stop_after_first = true },

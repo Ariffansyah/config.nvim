@@ -45,7 +45,46 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = {
+      diagnostics = {
+        float = {
+          border = "rounded",
+          max_width = 100,
+          max_height = 20,
+          header = "",
+          prefix = "",
+          format = function(diagnostic)
+            local source = diagnostic.source or "LSP"
+            local code = diagnostic.code or ""
+            if code ~= "" then
+              return string.format("[%s:%s] %s", source, code, diagnostic.message)
+            end
+            return string.format("[%s] %s", source, diagnostic.message)
+          end,
+        },
+      },
       servers = {
+        -- Buffer-local, so these win over LazyVim's K / <leader>ca
+        ["*"] = {
+          keys = {
+            {
+              "K",
+              function()
+                require("pretty_hover").hover()
+              end,
+              desc = "Hover Documentation",
+            },
+            {
+              "<leader>ca",
+              function()
+                require("actions-preview").code_actions()
+              end,
+              mode = { "n", "x" },
+              desc = "Code Action Preview",
+              has = "codeAction",
+            },
+          },
+        },
+
         -- ==========================================
         -- JavaScript/TypeScript Frameworks
         -- ==========================================
@@ -320,20 +359,37 @@ return {
   {
     "adalessa/laravel.nvim",
     dependencies = {
-      "nvim-telescope/telescope.nvim",
-      "tpope/vim-dotenv",
       "MunifTanjim/nui.nvim",
+      "nvim-lua/plenary.nvim",
+      "nvim-neotest/nvim-nio",
     },
-    cmd = { "Sail", "Artisan", "Composer", "Npm", "Yarn", "Laravel" },
+    ft = { "php", "blade" },
+    event = { "BufEnter composer.json" },
     keys = {
-      { "<leader>la", ":Laravel artisan<cr>", desc = "Laravel Artisan" },
-      { "<leader>lr", ":Laravel routes<cr>", desc = "Laravel Routes" },
-      { "<leader>lm", ":Laravel related<cr>", desc = "Laravel Related" },
+      {
+        "<leader>la",
+        function()
+          Laravel.pickers.artisan()
+        end,
+        desc = "Laravel Artisan",
+      },
+      {
+        "<leader>lr",
+        function()
+          Laravel.pickers.routes()
+        end,
+        desc = "Laravel Routes",
+      },
+      {
+        "<leader>lm",
+        function()
+          Laravel.pickers.related()
+        end,
+        desc = "Laravel Related",
+      },
     },
-    event = { "BufRead **/*/app/*.php" },
-    config = function()
-      require("laravel").setup()
-      require("telescope").load_extension("laravel")
-    end,
+    opts = {
+      features = { pickers = { provider = "snacks" } },
+    },
   },
 }

@@ -67,7 +67,8 @@ return {
   -- Image paste support
   {
     "HakonHarnes/img-clip.nvim",
-    event = "BufEnter",
+    ft = "markdown",
+    cmd = "PasteImage",
     opts = {
       default = {
         embed_image_as_base64 = false,

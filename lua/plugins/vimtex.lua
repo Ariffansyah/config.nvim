@@ -14,9 +14,5 @@ return {
       "Overfull",
       "specifier changed to",
     }
-
-    -- Shortcuts: compile and view PDF
-    vim.keymap.set("n", "<localleader>lc", ":VimtexCompile<CR>")
-    vim.keymap.set("n", "<localleader>lv", ":VimtexView<CR>")
   end,
 }

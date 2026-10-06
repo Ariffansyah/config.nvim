@@ -1,23 +1,4 @@
 return {
-  -- Trouble for diagnostics list
-  {
-    "folke/trouble.nvim",
-    cmd = "Trouble",
-    opts = {},
-    keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics" },
-      { "<leader>cs", "<cmd>Trouble symbols toggle focus=false<cr>", desc = "Symbols (Trouble)" },
-      {
-        "<leader>cl",
-        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
-        desc = "LSP Definitions / references / ...",
-      },
-      { "<leader>xL", "<cmd>Trouble loclist toggle<cr>", desc = "Location List (Trouble)" },
-      { "<leader>xQ", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List (Trouble)" },
-    },
-  },
-
   -- Inline diagnostics
   {
     "rachartier/tiny-inline-diagnostic.nvim",
@@ -36,35 +17,7 @@ return {
     end,
   },
 
-  -- Code actions preview
-  {
-    "aznhe21/actions-preview.nvim",
-    event = "LspAttach",
-    keys = {
-      {
-        "<leader>ca",
-        function()
-          require("actions-preview").code_actions()
-        end,
-        mode = { "n", "v" },
-        desc = "Code Action Preview",
-      },
-    },
-  },
-
-  -- Enhanced hover documentation
-  {
-    "Fildo7525/pretty_hover",
-    event = "LspAttach",
-    opts = {},
-    keys = {
-      {
-        "K",
-        function()
-          require("pretty_hover").hover()
-        end,
-        desc = "Hover Documentation",
-      },
-    },
-  },
+  -- Code actions preview + enhanced hover (keys: lsp.lua servers["*"].keys)
+  { "aznhe21/actions-preview.nvim", lazy = true },
+  { "Fildo7525/pretty_hover", lazy = true, opts = {} },
 }

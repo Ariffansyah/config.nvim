@@ -1,43 +1,44 @@
--- Custom Base16 colorscheme
+-- Custom Base16 colorscheme - matches Waywallen video wallpaper (Proguild3.mp4) + Noctalia desktop
+-- Wallpaper blues extracted: schemecolor #0e2640, palette #2a4a6b #336593 #63a4d9
 local colors = {
-  base00 = "#1a161a", -- Background
-  base01 = "#2a242a", -- Lighter background (Status bar/etc)
-  base02 = "#8e768e", -- Selection background
-  base03 = "#8e768e", -- Comments
-  base04 = "#ffffff", -- Variables
-  base05 = "#ffffff", -- Foreground
-  base06 = "#ffb3ff", -- Palette 14
-  base07 = "#ffffff", -- Palette 15
-  base08 = "#ff5f87", -- Palette 1 (Red/Pink)
-  base09 = "#ffb3ba", -- Palette 2 (Strings)
-  base0A = "#ffffaf", -- Palette 3 (Yellow/Gold)
-  base0B = "#ff79c6", -- Palette 5 (Keywords - PINK)
-  base0C = "#ff87af", -- Palette 9 (Functions) - PINK/MAGENTA
-  base0D = "#ffafd7", -- Palette 13 (Types)
-  base0E = "#f78da7", -- Palette 6 (Operators)
-  base0F = "#ffb3ff", -- Palette 14
+  base00 = "#131313", -- Background (window_bg)
+  base01 = "#1a2433", -- Lighter bg - blue-tinted (mix #131313 + #0e2640)
+  base02 = "#2a4a6b", -- Selection background (video palette 42,74,107)
+  base03 = "#7a8da6", -- Comments (blue-grey)
+  base04 = "#8aa0b8", -- Muted fg
+  base05 = "#e2e2e2", -- Foreground (window_fg, keep readable)
+  base06 = "#c6d0de", -- Light blue-grey
+  base07 = "#ffffff", -- Bright white
+  base08 = "#8ab4e0", -- Red -> blue (was #ffb4ab pink, now blue to match wallpaper)
+  base09 = "#c6d0de", -- Orange -> light blue-grey
+  base0A = "#c6d0de", -- Yellow -> light blue-grey
+  base0B = "#63a4d9", -- Keywords - wallpaper bright blue (99,164,217)
+  base0C = "#8ab4e0", -- Functions - light blue
+  base0D = "#336593", -- Types - mid blue (51,101,147)
+  base0E = "#5a8ec2", -- Operators - blue
+  base0F = "#7a8da6", -- Brown -> blue-grey
 }
 
 vim.g.colors_name = "base16"
 
--- Set terminal colors
+-- Set terminal colors to match wallpaper blues + Noctalia (no pink)
 local terminal_ansi_colors = {
-  colors.base08,
-  colors.base09,
-  colors.base0B,
-  colors.base0A,
-  colors.base0D,
-  colors.base0E,
-  colors.base0C,
-  colors.base05,
-  colors.base03,
-  colors.base08,
-  colors.base0B,
-  colors.base0A,
-  colors.base0D,
-  colors.base0E,
-  colors.base0C,
-  colors.base07,
+  "#1a2433", -- black (blue dark)
+  "#8ab4e0", -- red -> blue (was #ffb4ab)
+  "#63a4d9", -- green -> blue
+  "#c6d0de", -- yellow -> light blue-grey
+  "#336593", -- blue (51,101,147)
+  "#5a8ec2", -- magenta -> blue
+  "#8ab4e0", -- cyan (light blue)
+  "#e2e2e2", -- white
+  "#7a8da6", -- bright black (blue-grey)
+  "#8ab4e0", -- bright red -> blue
+  "#63a4d9", -- bright green -> blue
+  "#c6d0de", -- bright yellow
+  "#336593", -- bright blue
+  "#5a8ec2", -- bright magenta
+  "#8ab4e0", -- bright cyan
+  "#ffffff", -- bright white
 }
 
 for i, color in ipairs(terminal_ansi_colors) do
@@ -50,17 +51,17 @@ local highlights = {
   -- Base colors
   Normal = { bg = colors.base00, fg = colors.base05 },
   NormalFloat = { bg = colors.base00, fg = colors.base05 },
-  FloatBorder = { fg = colors.base0C, bg = colors.base00 },
-  CursorLine = { bg = "#252025" },
-  Visual = { bg = colors.base02, fg = colors.base05 }, -- High contrast selection
+  FloatBorder = { fg = colors.base0B, bg = colors.base00 },
+  CursorLine = { bg = colors.base01 },
+  Visual = { bg = colors.base02, fg = colors.base05 },
 
-  -- LSP Diagnostics (Contrast for warnings/errors)
-  DiagnosticError = { fg = "#ff5555", bold = true }, -- Vibrant red-pink
-  DiagnosticWarn = { fg = colors.base0A, bold = true }, -- Yellow/Gold
-  DiagnosticInfo = { fg = colors.base0C }, -- Magenta
-  DiagnosticHint = { fg = colors.base0D }, -- Light Pink
-  DiagnosticUnderlineError = { undercurl = true, sp = "#ff5555" },
-  DiagnosticUnderlineWarn = { undercurl = true, sp = colors.base0A },
+  -- LSP Diagnostics (blue, no pink)
+  DiagnosticError = { fg = "#8ab4e0", bold = true },
+  DiagnosticWarn = { fg = colors.base06, bold = true },
+  DiagnosticInfo = { fg = colors.base05 },
+  DiagnosticHint = { fg = colors.base04 },
+  DiagnosticUnderlineError = { undercurl = true, sp = "#8ab4e0" },
+  DiagnosticUnderlineWarn = { undercurl = true, sp = colors.base06 },
 
   -- Statusline / Bottom Bar (Separation from code)
   StatusLine = { fg = colors.base05, bg = colors.base01 }, -- Light bg for contrast
@@ -107,4 +108,41 @@ local highlights = {
 
 for group, opts in pairs(highlights) do
   vim.api.nvim_set_hl(0, group, opts)
+end
+
+-- Transparent background (lives here so :colorscheme re-applies it)
+for _, group in ipairs({
+  "Normal",
+  "NormalFloat",
+  "NormalNC",
+  "FloatBorder",
+  "Pmenu",
+  "Terminal",
+  "EndOfBuffer",
+  "FoldColumn",
+  "Folded",
+  "SignColumn",
+  "WhichKeyFloat",
+  "NeoTreeNormal",
+  "NeoTreeNormalNC",
+  "NeoTreeVertSplit",
+  "NeoTreeWinSeparator",
+  "NeoTreeEndOfBuffer",
+  "NotifyINFOBody",
+  "NotifyERRORBody",
+  "NotifyWARNBody",
+  "NotifyTRACEBody",
+  "NotifyDEBUGBody",
+  "NotifyINFOTitle",
+  "NotifyERRORTitle",
+  "NotifyWARNTitle",
+  "NotifyTRACETitle",
+  "NotifyDEBUGTitle",
+  "NotifyINFOBorder",
+  "NotifyERRORBorder",
+  "NotifyWARNBorder",
+  "NotifyTRACEBorder",
+  "NotifyDEBUGBorder",
+}) do
+  vim.api.nvim_set_hl(0, group, { bg = "none" })
 end

@@ -1,14 +1,36 @@
 return {
-  -- Harpoon (see above)
+  -- Split/join arguments (the rest of mini comes from LazyVim extras)
+  { "nvim-mini/mini.splitjoin", keys = { { "gS", mode = { "n", "x" }, desc = "Split/join" } }, opts = {} },
 
   -- Silicon screenshots
   {
     "michaelrommel/nvim-silicon",
     cmd = "Silicon",
     keys = {
-      { "<leader>sc", mode = "v", desc = "Silicon: Copy to clipboard" },
-      { "<leader>sf", mode = "v", desc = "Silicon: Save to file" },
-      { "<leader>ss", mode = "v", desc = "Silicon: Screenshot" },
+      {
+        "<leader>sc",
+        function()
+          require("nvim-silicon").clip()
+        end,
+        mode = "v",
+        desc = "Silicon: Copy to clipboard",
+      },
+      {
+        "<leader>sf",
+        function()
+          require("nvim-silicon").file()
+        end,
+        mode = "v",
+        desc = "Silicon: Save to file",
+      },
+      {
+        "<leader>ss",
+        function()
+          require("nvim-silicon").shoot()
+        end,
+        mode = "v",
+        desc = "Silicon: Screenshot",
+      },
     },
     config = function()
       require("nvim-silicon").setup({

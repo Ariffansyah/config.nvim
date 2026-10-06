@@ -1,6 +1,6 @@
 return {
   "NStefan002/screenkey.nvim",
-  lazy = false,
+  event = "VeryLazy",
   version = "*",
   config = function()
     local width = 40
