@@ -85,6 +85,15 @@ return {
           },
         },
 
+        -- Ghost text writes the code for you, so it starts off (<leader>uP)
+        copilot = {
+          on_attach = function(client)
+            if not vim.g.copilot_ghost then
+              vim.lsp.inline_completion.enable(false, { client_id = client.id })
+            end
+          end,
+        },
+
         -- ==========================================
         -- JavaScript/TypeScript Frameworks
         -- ==========================================

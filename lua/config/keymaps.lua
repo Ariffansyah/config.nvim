@@ -9,6 +9,19 @@ vim.keymap.set("i", "<C-j>", function()
   vim.lsp.inline_completion.get()
 end, { desc = "Accept Copilot suggestion" })
 
+Snacks.toggle({
+  name = "Copilot ghost text",
+  get = function()
+    return vim.g.copilot_ghost == true
+  end,
+  set = function(on)
+    vim.g.copilot_ghost = on
+    for _, client in ipairs(vim.lsp.get_clients({ name = "copilot" })) do
+      vim.lsp.inline_completion.enable(on, { client_id = client.id })
+    end
+  end,
+}):map("<leader>uP")
+
 -- Show notification history
 vim.keymap.set("n", "<leader>nh", "<cmd>Noice history<cr>", { desc = "Show notification history" })
 
@@ -34,7 +47,8 @@ vim.keymap.set("n", "<leader>k", function()
     wo = { conceallevel = 2 },
     keys = { q = "close", ["<esc>"] = "close" },
     text = {
-      "## Claude",
+      "## AI",
+      "  <leader>uP     Copilot ghost text on / off",
       "  <leader>Cc     toggle Claude",
       "  <leader>Cf     focus Claude",
       "  <leader>Cs     send selection (visual) / add file (neo-tree)",
