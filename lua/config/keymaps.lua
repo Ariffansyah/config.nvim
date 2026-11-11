@@ -12,7 +12,7 @@ end, { desc = "Accept Copilot suggestion" })
 Snacks.toggle({
   name = "Copilot ghost text",
   get = function()
-    return vim.g.copilot_ghost == true
+    return vim.g.copilot_ghost ~= false
   end,
   set = function(on)
     vim.g.copilot_ghost = on

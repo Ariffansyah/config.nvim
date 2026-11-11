@@ -85,10 +85,10 @@ return {
           },
         },
 
-        -- Ghost text writes the code for you, so it starts off (<leader>uP)
+        -- Ghost text starts on; <leader>uP turns it off and keeps it off for new clients
         copilot = {
           on_attach = function(client)
-            if not vim.g.copilot_ghost then
+            if vim.g.copilot_ghost == false then
               vim.lsp.inline_completion.enable(false, { client_id = client.id })
             end
           end,
