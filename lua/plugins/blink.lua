@@ -4,6 +4,8 @@ return {
     keymap = {
       preset = "default",
       ["<C-k>"] = { "select_prev", "fallback" },
+      -- Set here so LazyVim doesn't add ghost-text accept to Tab: that's Alt+L and Right at line end.
+      ["<Tab>"] = { "snippet_forward", "fallback" },
     },
     appearance = {
       use_nvim_cmp_as_default = true,
